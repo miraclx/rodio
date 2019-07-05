@@ -79,6 +79,10 @@ class EventLoop(EventEmitter):
     def started(self):
         return self._thread._started.is_set()
 
+    @property
+    def ended(self):
+        return self._queue.ended
+
 
 def getRunningThread():
     return threading.current_thread()
