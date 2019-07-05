@@ -39,7 +39,7 @@ class EventQueue(asyncio.Queue):
     async def _startIterator(self):
         debug('async __startIterator init')
         async for [coro, args] in self.__stripCoros():
-            await coro if asyncio.iscoroutine(coro) else await coro(*args) if asyncio.iscoroutinefunction(coro) else coro(*args)
+            await coro if asyncio.iscoroutine(coro) else await coro(*args) if asyncio.iscoroutinefunction(coro) else await asyncio.gather(*coro) if isinstance(coro, (list, tuple)) else coro(*args)
             self.task_done()
         debug('async __startIterator exit')
 
