@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 
 """
-                                rodio:
-Crossplatform, non-blocking event loops for async concurrency and I/O
-            Think of this as AsyncIO on steroids
+                            rodio:
+Efficient non-blocking event loops for async concurrency and I/O
+          Think of this as AsyncIO on steroids
 """
 
 __author__ = "Miraculous Owonubi"

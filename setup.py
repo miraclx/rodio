@@ -8,7 +8,7 @@ setuptools.setup(
     version="0.1.0",
     author="Miraculous Owonubi",
     author_email="omiraculous@gmail.com",
-    description="Crossplatform, non-blocking event loops for async concurrency and I/O",
+    description="Efficient non-blocking event loops for async concurrency and I/O",
     long_description=long_description,
     long_description_content_type="text/markdown",
     license='Apache-2.0',
