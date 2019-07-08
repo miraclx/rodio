@@ -99,17 +99,32 @@ class RodioProcess(multiprocessing.Process, EventEmitter):
     def isDaemon(self):
         return self.is_daemon()
 
-    def has_started(self):
+    def started(self):
         return self.__started.is_set()
 
+    def has_started(self):
+        return self.started()
+
     def hasStarted(self):
-        return self.has_started()
+        return self.started()
 
     def ended(self):
         return self.has_started and not self.is_alive()
 
+    def has_ended(self):
+        return self.ended()
+
+    def hasEnded(self):
+        return self.ended()
+
     def paused(self):
         return self.__paused.is_set()
+
+    def has_paused(self):
+        return self.paused()
+
+    def hasPaused(self):
+        return self.paused()
 
     def __checkNotSelfProcess(self, ret=None, *, msg=None):
         if multiprocessing.current_process() is self:
