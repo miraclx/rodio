@@ -71,6 +71,9 @@ class RodioProcess(multiprocessing.Process, EventEmitter):
         return self.get_pid()
 
     def set_name(self, name):
+        if not (name and isinstance(name, str)):
+            raise RuntimeError(
+                "<name> parameter must be a specified str instance")
         self.name = name
 
     def setName(self, name):
@@ -86,7 +89,7 @@ class RodioProcess(multiprocessing.Process, EventEmitter):
         if self.has_started:
             raise RuntimeError(
                 "daemonizing process can only be done before initialization of process")
-        if type(state) is not bool:
+        if not isinstance(state, bool):
             raise TypeError("daemon state must be a boolean datatype")
         self.daemon = state
 
