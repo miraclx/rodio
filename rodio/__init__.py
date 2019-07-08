@@ -18,11 +18,10 @@ __status__ = "Development"
 from .__core__.eventloop import EventLoop, \
     EventQueue, \
     getRunningLoop, \
-    getRunningThread, \
-    get_running_loop, \
-    get_running_thread
+    get_running_loop,\
+    get_running_process
 
 
 def printprocess(*args, **kwargs):
-    thread = getRunningThread()
-    print(f'|{thread.name}|> ', *args, **kwargs)
+    process = get_running_process()
+    print(f'|{process.name}|> ', *args, **kwargs)
