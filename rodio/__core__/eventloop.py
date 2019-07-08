@@ -60,7 +60,7 @@ class EventLoop(EventEmitter):
 
     @debugwrapper
     def stop(self):
-        self._queue.forceStop()
+        self._process.stop()
 
     @debugwrapper
     def __closeAllBeforeRaise(self, err):
