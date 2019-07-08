@@ -21,7 +21,7 @@ class RodioProcess(multiprocessing.Process, EventEmitter):
         self.__paused = multiprocessing.Event()
 
     def start(self):
-        multiprocessing.Process.start(self)
+        super(RodioProcess, self).start()
         self.__started.set()
         self.emit('start')
 
@@ -31,7 +31,7 @@ class RodioProcess(multiprocessing.Process, EventEmitter):
     def stop(self):
         self.__checkNotSelfProcess(msg="cant stop process while within itself")
         self.emit('stop')
-        multiprocessing.Process.terminate(self)
+        super(RodioProcess, self).terminate()
 
     def terminate(self):
         self.stop()
