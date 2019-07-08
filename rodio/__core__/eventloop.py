@@ -44,9 +44,11 @@ class EventLoop(EventEmitter):
     @debugwrapper
     def start(self):
         if self.__autostarted:
-            raise RuntimeError("thread has been autostarted previously. assign %s on the EventLoop constructor to disable this"
+            raise RuntimeError("EventLoop has been autostarted previously. assign %s on the EventLoop constructor to disable this"
                                % 'autostart=False')
-
+        if self.started():
+            raise RuntimeError("EventLoop has been started already. Can't start a process beyond once%s"
+                               % '')
         self._process.start()
 
     @debugwrapper
