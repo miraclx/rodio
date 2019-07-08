@@ -7,9 +7,9 @@ Efficient non-blocking event loops for async concurrency and I/O
 """
 
 import asyncio
-import threading
 from node_events import EventEmitter
 from .eventqueue import EventQueue
+from .rodioprocess import RodioProcess, get_current_process
 from .internals.debug import debug, debugwrapper
 
 
@@ -18,14 +18,12 @@ class EventLoop(EventEmitter):
 
     @debugwrapper
     def __init__(self, name=None, *, autostart=True):
-        self.name = name or 'asynceventloop'
-        self._queue = EventQueue()
-        self._loop = asyncio.get_event_loop()
-        self._thread = threading.Thread(target=self.__initAsyncioLoop)
-        self._thread._loop = self
-        self._thread.setName(self.name)
-        self.__autostart = autostart
         super(EventLoop, self).__init__()
+        self.name = name or 'asynceventloop'
+        self.__autostart = autostart
+        self._queue = EventQueue()
+        self._process = RodioProcess(target=self._looper, name=self.name)
+        self._process._eventloop = self
 
     async def __asyncroot(self):
         debug('async __asyncroot init')
@@ -48,39 +46,50 @@ class EventLoop(EventEmitter):
         if self.__autostarted:
             raise RuntimeError("thread has been autostarted previously. assign %s on the EventLoop constructor to disable this"
                                % 'autostart=False')
-        self._thread.start()
+
+        self._process.start()
 
     @debugwrapper
     def join(self):
-        if get_running_thread() is self._thread:
-            raise self.__Error(RuntimeError(
-                "Cannot join my process into myself, bro wassup"))
-        self._thread.join()
+        if get_running_process() is self._process:
+            raise self.__closeAllBeforeRaise(RuntimeError(
+                "Cannot join my process into itself, behave!"))
+        self._process.join()
 
     @debugwrapper
     def stop(self):
         self._queue.forceStop()
 
     @debugwrapper
-    def __Error(self, err):
+    def __closeAllBeforeRaise(self, err):
         self._queue.closeAll()
         return err
 
     @property
     def started(self):
-        return self._thread._started.is_set()
+        return self._process.has_started()
 
     @property
     def ended(self):
         return self._queue.ended
 
+# ========================================================
 
-def getRunningThread():
-    return threading.current_thread()
+# Functions to get the currently running process
+
+
+get_running_process = get_current_process
+getRunningProcess = get_current_process
+get_current_process = get_current_process
+getCurrentProcess = get_current_process
+
+# ========================================================
+
+# Functions to get current event loop
 
 
 def getRunningLoop(ret=None):
-    loop = getattr(getRunningThread(), '_loop', None)
+    loop = getattr(get_current_process(), '_eventloop', None)
     if loop:
         return loop
     elif ret:
