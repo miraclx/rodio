@@ -13,9 +13,10 @@ from node_events import EventEmitter
 
 
 class RodioProcess(multiprocessing.Process, EventEmitter):
-    def __init__(self, target):
+    def __init__(self, target, *, name=None, args=(), kwargs=None, daemon=None):
         EventEmitter.__init__(self)
-        multiprocessing.Process.__init__(self, target=target)
+        multiprocessing.Process.__init__(
+            self, target=target, args=args or (), kwargs=kwargs or {}, daemon=daemon)
         self.__started = multiprocessing.Event()
         self.__paused = multiprocessing.Event()
 
