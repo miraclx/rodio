@@ -97,5 +97,13 @@ def getRunningLoop(ret=None):
     raise RuntimeError('no running event loop')
 
 
-get_running_thread = getRunningThread
 get_running_loop = getRunningLoop
+get_current_loop = getRunningLoop
+getCurrentLoop = getRunningLoop
+
+getRunningEventloop = getRunningLoop
+get_running_eventloop = getRunningLoop
+getCurrentEventloop = getRunningLoop
+get_current_eventloop = getRunningLoop
+
+# ========================================================
