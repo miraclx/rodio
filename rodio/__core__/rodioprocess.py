@@ -136,3 +136,13 @@ class RodioProcess(multiprocessing.Process, EventEmitter):
             else:
                 raise RuntimeError(
                     msg or "cant execute operation within self process")
+
+
+def current_process():
+    return multiprocessing.current_process()
+
+
+get_running_process = current_process
+getRunningProcess = current_process
+get_current_process = current_process
+getCurrentProcess = current_process
