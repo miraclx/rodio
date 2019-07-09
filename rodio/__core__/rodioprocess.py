@@ -36,20 +36,27 @@ class RodioProcess(multiprocessing.context.Process):
     def terminate(self):
         self.stop()
 
-    def pause(self):
+    def __pause(self, action, code):
         if not self.has_started():
             raise RuntimeError("unstarted process cant be paused")
+        if self.ended():
+            raise RuntimeError("can't pause ended process")
         if not self.paused():
-            self.__checkNotSelfProcess(
-                msg="cant pause process while within itself")
-            self.__paused.set()
+            # self.__checkNotSelfProcess(
+            #     msg="cant pause process while within itself")
+            self._paused.set()
             if self.pid:
-                os.kill(self.pid, signal.SIGTSTP)
-                self.emit('pause')
+                os.kill(self.pid, code)
             else:
                 raise RuntimeError("cant pause unstarted process")
         else:
             raise RuntimeError("process already paused")
+
+    def pause(self):
+        self.__pause('pause', signal.SIGTSTP)
+
+    def halt(self):
+        self.__pause('halt', signal.SIGSTOP)
 
     def resume(self):
         if not self.has_started():
