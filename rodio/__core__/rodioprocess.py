@@ -9,20 +9,20 @@ Efficient non-blocking event loops for async concurrency and I/O
 import os
 import signal
 import multiprocessing
-from node_events import EventEmitter
 
 
-class RodioProcess(multiprocessing.Process, EventEmitter):
+class RodioProcess(multiprocessing.context.Process):
     def __init__(self, target, *, name=None, args=(), kwargs=None, daemon=None):
-        EventEmitter.__init__(self)
-        multiprocessing.Process.__init__(
-            self, target=target, args=args or (), kwargs=kwargs or {}, daemon=daemon)
-        self.__started = multiprocessing.Event()
-        self.__paused = multiprocessing.Event()
+        super(RodioProcess, self).__init__(target=target,
+                                           args=args or (),
+                                           kwargs=kwargs or {},
+                                           daemon=daemon)
+        self._started = multiprocessing.Event()
+        self._paused = multiprocessing.Event()
 
     def start(self):
         super(RodioProcess, self).start()
-        self.__started.set()
+        self._started.set()
         self.emit('start')
 
     def init(self):
