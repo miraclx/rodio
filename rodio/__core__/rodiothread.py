@@ -10,8 +10,6 @@ import threading
 
 
 class RodioThread(threading.Thread):
-    _looper = None
-
     def __init__(self, target):
         super(RodioThread, self).__init__(target=target)
         self._ended = threading.Event()
