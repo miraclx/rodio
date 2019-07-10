@@ -69,7 +69,7 @@ class RodioProcess(multiprocessing.context.Process):
         if self.paused():
             self.__checkNotSelfProcess(
                 self, msg="cant pause process while within itself")
-            self.__paused.clear()
+            self._paused.clear()
             os.kill(self.pid, signal.SIGCONT)
             self.emit('resume')
         else:
@@ -114,7 +114,7 @@ class RodioProcess(multiprocessing.context.Process):
         return self.is_daemon()
 
     def started(self):
-        return self.__started.is_set()
+        return self._started.is_set()
 
     def has_started(self):
         return self.started()
@@ -132,7 +132,7 @@ class RodioProcess(multiprocessing.context.Process):
         return self.ended()
 
     def paused(self):
-        return self.__paused.is_set()
+        return self._paused.is_set()
 
     def has_paused(self):
         return self.paused()
