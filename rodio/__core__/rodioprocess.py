@@ -32,7 +32,7 @@ class RodioProcess(multiprocessing.context.Process):
         if self.ended():
             raise RuntimeError("process already ended")
         if current_process() == self:
-            exit()
+            exit(0)
         else:
             super(RodioProcess, self).terminate()
 
