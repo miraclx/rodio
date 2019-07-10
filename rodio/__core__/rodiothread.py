@@ -6,18 +6,17 @@ Efficient non-blocking event loops for async concurrency and I/O
           Think of this as AsyncIO on steroids
 """
 
-import threading
+from threading import Thread, Event, current_thread
 
 
-class RodioThread(threading.Thread):
-    def __init__(self, target):
-        super(RodioThread, self).__init__(target=target)
-        self._ended = threading.Event()
-        self._started = threading.Event()
-
-    def start(self):
-        self._started.set()
-        super(RodioThread, self).start()
+class RodioThread(Thread):
+    def __init__(self, target, *, name=None, args=(), kwargs=None, daemon=None):
+        super(RodioThread, self).__init__(target=target,
+                                          args=args or (),
+                                          kwargs=kwargs or {},
+                                          daemon=daemon)
+        self._ended = Event()
+        self.set_name(name or self.name)
 
     def stop(self):
         self._ended.set()
