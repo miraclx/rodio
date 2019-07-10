@@ -78,6 +78,15 @@ class RodioProcess(multiprocessing.context.Process):
 
     getPid = get_pid
 
+    def ppid(self):
+        return self._parent_pid
+
+    get_ppid = ppid
+    getPpid = ppid
+    get_parentpid = ppid
+    parent_pid = ppid
+    parentPid = ppid
+
     def set_name(self, name):
         if not (name and isinstance(name, str)):
             raise RuntimeError(
