@@ -24,10 +24,8 @@ class RodioProcess(multiprocessing.context.Process):
     def start(self):
         super(RodioProcess, self).start()
         self._started.set()
-        self.emit('start')
 
-    def init(self):
-        self.start()
+    init = start
 
     def stop(self):
         # self.__checkNotSelfProcess(msg="cant stop process while within itself")
@@ -38,8 +36,7 @@ class RodioProcess(multiprocessing.context.Process):
         else:
             super(RodioProcess, self).terminate()
 
-    def terminate(self):
-        self.stop()
+    terminate = stop
 
     def __pause(self, action, code):
         if not self.has_started():
@@ -79,8 +76,7 @@ class RodioProcess(multiprocessing.context.Process):
     def get_pid(self):
         return self.pid
 
-    def getPid(self):
-        return self.get_pid()
+    getPid = get_pid
 
     def set_name(self, name):
         if not (name and isinstance(name, str)):
@@ -88,14 +84,12 @@ class RodioProcess(multiprocessing.context.Process):
                 "<name> parameter must be a specified str instance")
         self.name = name
 
-    def setName(self, name):
-        self.set_name(name)
+    setName = set_name
 
     def get_name(self):
         return self.name
 
-    def getName(self):
-        return self.get_name()
+    getName = get_name
 
     def set_daemon(self, state):
         if self.has_started:
@@ -105,41 +99,30 @@ class RodioProcess(multiprocessing.context.Process):
             raise TypeError("daemon state must be a boolean datatype")
         self.daemon = state
 
-    def setDaemon(self, state):
-        self.set_daemon(state)
+    setDaemon = set_daemon
 
     def is_daemon(self):
         return self.daemon
 
-    def isDaemon(self):
-        return self.is_daemon()
+    isDaemon = is_daemon
 
     def started(self):
         return self._started.is_set()
 
-    def has_started(self):
-        return self.started()
-
-    def hasStarted(self):
-        return self.started()
+    has_started = started
+    hasStarted = started
 
     def ended(self):
         return self.has_started and not self.is_alive()
 
-    def has_ended(self):
-        return self.ended()
-
-    def hasEnded(self):
-        return self.ended()
+    has_ended = ended
+    hasEnded = ended
 
     def paused(self):
         return self._paused.is_set()
 
-    def has_paused(self):
-        return self.paused()
-
-    def hasPaused(self):
-        return self.paused()
+    has_paused = paused
+    hasPaused = paused
 
     def __checkNotSelfProcess(self, ret=None, *, msg=None):
         if multiprocessing.current_process() is self:
