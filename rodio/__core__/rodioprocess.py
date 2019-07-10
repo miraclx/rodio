@@ -106,7 +106,7 @@ class RodioProcess(multiprocessing.context.Process):
     isDaemon = is_daemon
 
     def started(self):
-        return self._started.is_set()
+        return self.is_alive() and self._started.is_set()
 
     has_started = started
     hasStarted = started
