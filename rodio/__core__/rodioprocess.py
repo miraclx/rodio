@@ -19,6 +19,7 @@ class RodioProcess(multiprocessing.context.Process):
                                            daemon=daemon)
         self._started = multiprocessing.Event()
         self._paused = multiprocessing.Event()
+        self.set_name(name or self.name)
 
     def start(self):
         super(RodioProcess, self).start()
