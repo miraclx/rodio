@@ -25,7 +25,7 @@ class RodioThread(Thread):
     terminate = stop
 
     def started(self):
-        return self.is_alive() and self._started.is_set()
+        return self.is_alive()
 
     has_started = started
 
