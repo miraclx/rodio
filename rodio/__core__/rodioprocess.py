@@ -36,6 +36,7 @@ class RodioProcess(multiprocessing.context.Process):
         else:
             super(RodioProcess, self).terminate()
 
+    end = stop
     terminate = stop
 
     def __pause(self, action, code):
