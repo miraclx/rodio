@@ -63,13 +63,12 @@ class RodioProcess(multiprocessing.context.Process):
     def resume(self):
         if not self.has_started():
             raise RuntimeError(
-                "unstarted process cant be resumed because it couldn't be paused")
+                "unstarted process can't be resumed because it couldn't be paused")
         if self.paused():
             self.__checkNotSelfProcess(
                 self, msg="cant pause process while within itself")
             self._paused.clear()
             os.kill(self.pid, signal.SIGCONT)
-            self.emit('resume')
         else:
             raise RuntimeError("process not paused")
 
