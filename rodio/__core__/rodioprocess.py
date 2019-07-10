@@ -29,9 +29,13 @@ class RodioProcess(multiprocessing.context.Process):
         self.start()
 
     def stop(self):
-        self.__checkNotSelfProcess(msg="cant stop process while within itself")
-        self.emit('stop')
-        super(RodioProcess, self).terminate()
+        # self.__checkNotSelfProcess(msg="cant stop process while within itself")
+        if self.ended():
+            raise RuntimeError("process already ended")
+        if current_process() == self:
+            exit()
+        else:
+            super(RodioProcess, self).terminate()
 
     def terminate(self):
         self.stop()
