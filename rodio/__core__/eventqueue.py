@@ -58,6 +58,31 @@ class EventQueue(EventEmitter):
             self._underlayer.task_done()
         debug('async __startIterator exit')
 
+    @debugwrapper
+    def _resume(self):
+        self.__checkActivityElseRaise()
+        self._paused.clear()
+        self._running.set()
+
+    def start(self):
+        self._resume()
+        asyncio.run(self._startIterator())
+
+    @debugwrapper
+    def resume(self):
+        self._resume()
+        self.emit('resume')
+
+    def _pause(self):
+        self.__checkActivityElseRaise()
+        self._paused.set()
+        self._running.clear()
+
+    @debugwrapper
+    def pause(self):
+        self._pause()
+        self.emit('pause')
+
     def _end(self):
         self.__checkActivityElseRaise()
         self._running._cond.acquire()
@@ -71,27 +96,6 @@ class EventQueue(EventEmitter):
     def end(self):
         self._end()
         self.emit('end')
-
-    def _pause(self):
-        self.__checkActivityElseRaise()
-        self._paused.set()
-        self._running.clear()
-
-    @debugwrapper
-    def pause(self):
-        self._pause()
-        self.emit('pause')
-
-    def _resume(self):
-        self.__checkActivityElseRaise()
-        self._paused.clear()
-        self._running.set()
-
-    @debugwrapper
-    def resume(self):
-        self._resume()
-        self.emit('resume')
-        return self._startIterator()
 
     def __checkActivityElseRaise(self):
         if self.ended():
