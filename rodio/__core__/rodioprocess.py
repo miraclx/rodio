@@ -9,9 +9,12 @@ Efficient non-blocking event loops for async concurrency and I/O
 import os
 import signal
 import multiprocessing
+from .internals.debug import debug, debugwrapper
 
 
 class RodioProcess(multiprocessing.context.Process):
+
+    @debugwrapper
     def __init__(self, target, *, name=None, args=(), kwargs=None, daemon=None):
         super(RodioProcess, self).__init__(target=target,
                                            args=args or (),
@@ -21,12 +24,14 @@ class RodioProcess(multiprocessing.context.Process):
         self._paused = multiprocessing.Event()
         self.set_name(name or self.name)
 
+    @debugwrapper
     def start(self):
         super(RodioProcess, self).start()
         self._started.set()
 
     init = start
 
+    @debugwrapper
     def stop(self):
         # self.__checkNotSelfProcess(msg="cant stop process while within itself")
         if self.ended():
@@ -55,12 +60,15 @@ class RodioProcess(multiprocessing.context.Process):
         else:
             raise RuntimeError("process already paused")
 
+    @debugwrapper
     def pause(self):
         self.__pause('pause', signal.SIGTSTP)
 
+    @debugwrapper
     def halt(self):
         self.__pause('halt', signal.SIGSTOP)
 
+    @debugwrapper
     def resume(self):
         if not self.has_started():
             raise RuntimeError(
@@ -87,6 +95,7 @@ class RodioProcess(multiprocessing.context.Process):
     parent_pid = ppid
     parentPid = ppid
 
+    @debugwrapper
     def set_name(self, name):
         if not (name and isinstance(name, str)):
             raise RuntimeError(
@@ -100,6 +109,7 @@ class RodioProcess(multiprocessing.context.Process):
 
     getName = get_name
 
+    @debugwrapper
     def set_daemon(self, state):
         if self.has_started:
             raise RuntimeError(
