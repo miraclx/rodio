@@ -22,6 +22,7 @@ class EventLoop():
 
         self.__block = block
         self.__autostart = autostart
+        self.__queued_exit = Event()
 
         self._queue = EventQueue()
         self._process = RodioThread(target=self._run,
@@ -36,6 +37,9 @@ class EventLoop():
     def nextTick(self, coro, *args):
         if self.ended():
             raise RuntimeError("Can't enqueue items to the ended process")
+        if self.end_is_queued():
+            raise RuntimeError(
+                "Can't enqueue items to a process thats scheduled to stop")
         self._queue.push(coro, args)
         if self.__autostart and not self.started():
             self.start()
@@ -62,6 +66,7 @@ class EventLoop():
 
     @debugwrapper
     def stop(self):
+        self.__queued_exit.clear()
         self._queue.end()
         self._process.stop()
 
@@ -72,12 +77,26 @@ class EventLoop():
     def __closeAllBeforeRaise(self, err):
         self._queue.closeAll()
         return err
+    @debugwrapper
+    def scheduleStop(self):
+        if self.ended():
+            raise RuntimeError(
+                "can't queue a process stop on an ended process")
+        if self.end_is_queued():
+            raise RuntimeError(
+                "this process is already scheduled to stop")
+        self.nextTick(self.stop)
+        self.__queued_exit.set()
+
 
     def started(self):
         return self._process.started()
 
     def ended(self):
         return self._process.ended() and self._queue.ended()
+
+    def end_is_queued(self):
+        return self.__queued_exit.is_set()
 
     def paused(self):
         return self._queue.paused()
