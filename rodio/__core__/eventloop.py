@@ -13,31 +13,30 @@ from .rodiothread import RodioThread, current_thread, Event
 from .internals.debug import debug, debugwrapper
 
 
-class EventLoop(EventEmitter):
-    _loop = _queue = _thread = __iteratorCoroutine = __autostarted = None
+class EventLoop():
+    _queue = _process = __block = __autostarted = __queued_exit = None
 
     @debugwrapper
-    def __init__(self, name=None, *, autostart=True):
-        super(EventLoop, self).__init__()
-        self.name = name or 'asynceventloop'
+    def __init__(self, name=None, *, autostart=True, block=False, daemon=False):
+        self.name = name or 'rodioeventloop'
+
         self.__autostart = autostart
+
         self._queue = EventQueue()
-        self._process = RodioProcess(target=self._looper, name=self.name)
+        self._process = RodioThread(target=self._run,
+                                    name=self.name,
+                                    daemon=daemon)
         self._process._eventloop = self
 
-    async def __asyncroot(self):
-        debug('async __asyncroot init')
-        await self._queue._startIterator()
-        self.emit('exit')
-        debug('async __asyncroot exit')
-
-    def __initAsyncioLoop(self):
-        asyncio.run(self.__asyncroot())
+    def _run(self):
+        self._queue.start()
 
     @debugwrapper
     def nextTick(self, coro, *args):
+        if self.ended():
+            raise RuntimeError("Can't enqueue items to the ended process")
         self._queue.push(coro, args)
-        if self.__autostart and not self.started:
+        if self.__autostart and not self.started():
             self.start()
             self.__autostarted = True
 
@@ -53,50 +52,54 @@ class EventLoop(EventEmitter):
 
     @debugwrapper
     def join(self):
-        if get_running_process() is self._process:
-            raise self.__closeAllBeforeRaise(RuntimeError(
-                "Cannot join my process into itself, behave!"))
+        if current_thread() is self._process:
+            raise RuntimeError(
+                "Cannot join my process into itself, behave!")
         self._process.join()
 
     @debugwrapper
     def stop(self):
+        self._queue.end()
         self._process.stop()
+
+    end = stop
+    terminate = stop
 
     @debugwrapper
     def __closeAllBeforeRaise(self, err):
         self._queue.closeAll()
         return err
 
-    @property
     def started(self):
-        return self._process.has_started()
+        return self._process.started()
 
-    @property
     def ended(self):
-        return self._queue.ended
+        return self._process.ended() and self._queue.ended()
+
+    def paused(self):
+        return self._queue.paused()
 
 # ========================================================
 
 # Functions to get the currently running process
 
 
-get_running_process = get_current_process
-getRunningProcess = get_current_process
-get_current_process = get_current_process
-getCurrentProcess = get_current_process
+get_running_process = current_thread
+getRunningProcess = current_thread
+get_current_process = current_thread
+getCurrentProcess = current_thread
 
 # ========================================================
 
 # Functions to get current event loop
 
 
-def getRunningLoop(ret=None):
-    loop = getattr(get_current_process(), '_eventloop', None)
-    if loop:
+def getRunningLoop(*args):
+    loop = getattr(current_thread(), '_eventloop', *args or (None,))
+    if not (args and loop):
+        raise RuntimeError('no running event loop')
+    else:
         return loop
-    elif ret:
-        return ret
-    raise RuntimeError('no running event loop')
 
 
 get_running_loop = getRunningLoop
@@ -109,3 +112,11 @@ getCurrentEventloop = getRunningLoop
 get_current_eventloop = getRunningLoop
 
 # ========================================================
+"""
+
+with EventLoop() as process:
+    process.nextTick(exec1)
+    process.nextTick(exec2)
+    
+print("hey")
+"""
