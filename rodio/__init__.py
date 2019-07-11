@@ -17,6 +17,8 @@ __status__ = "Development"
 
 from .__core__.eventloop import EventLoop, \
     EventQueue, \
+    RodioThread, \
+    RodioProcess, \
     getRunningLoop, \
     get_running_loop,\
     get_running_process
