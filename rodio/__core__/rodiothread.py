@@ -73,3 +73,13 @@ class RodioThread(threading.Thread):
         return self._ended.is_set()
 
     has_ended = ended
+
+
+def current_thread():
+    return threading.current_thread()
+
+
+get_running_thread = current_thread
+getRunningThread = current_thread
+get_current_thread = current_thread
+getCurrentThread = current_thread
