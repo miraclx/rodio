@@ -39,7 +39,6 @@ class EventQueue(EventEmitter):
         if self.paused():
             self._resume()
 
-    @debugwrapper
     def __stripCoros(self):
         while not self.ended():
             try:
