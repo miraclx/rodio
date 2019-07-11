@@ -92,6 +92,19 @@ class EventLoop():
         self.nextTick(self.stop)
         self.__queued_exit.set()
 
+    def set_name(self, name):
+        if not (name and isinstance(name, str)):
+            raise RuntimeError(
+                "<name> parameter must be a specified str instance")
+        self.name = name
+        self._process.set_name(self.name)
+
+    setName = set_name
+
+    def get_name(self):
+        return self.name
+
+    getName = get_name
 
     def started(self):
         return self._process.started()
