@@ -8,7 +8,7 @@ Efficient non-blocking event loops for async concurrency and I/O
 
 import multiprocessing
 from .eventqueue import EventQueue
-from .rodiothread import RodioThread
+from .rodiothread import RodioThread, current_thread
 from .rodioprocess import RodioProcess, current_process
 from .internals.debug import debug, debugwrapper
 
