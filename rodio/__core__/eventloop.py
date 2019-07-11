@@ -9,7 +9,7 @@ Efficient non-blocking event loops for async concurrency and I/O
 import asyncio
 from node_events import EventEmitter
 from .eventqueue import EventQueue
-from .rodioprocess import RodioProcess, get_current_process
+from .rodiothread import RodioThread, current_thread, Event
 from .internals.debug import debug, debugwrapper
 
 
