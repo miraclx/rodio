@@ -20,6 +20,7 @@ class EventLoop():
     def __init__(self, name=None, *, autostart=True, block=False, daemon=False):
         self.name = name or 'rodioeventloop'
 
+        self.__block = block
         self.__autostart = autostart
 
         self._queue = EventQueue()
@@ -49,6 +50,8 @@ class EventLoop():
             raise RuntimeError("EventLoop has been started already. Can't start a process beyond once%s"
                                % '')
         self._process.start()
+        if self.__block:
+            self.join()
 
     @debugwrapper
     def join(self):
