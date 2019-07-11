@@ -27,7 +27,8 @@ class EventLoop():
         self._queue = EventQueue()
         self._process = RodioThread(target=self._run,
                                     name=self.name,
-                                    daemon=daemon)
+                                    daemon=daemon,
+                                    killswitch=self._queue.end)
         self._process._eventloop = self
 
     def _run(self):
@@ -67,7 +68,6 @@ class EventLoop():
     @debugwrapper
     def stop(self):
         self.__queued_exit.clear()
-        self._queue.end()
         self._process.stop()
 
     end = stop
