@@ -6,9 +6,8 @@ Efficient non-blocking event loops for async concurrency and I/O
           Think of this as AsyncIO on steroids
 """
 
-import queue
 import asyncio
-import threading
+import multiprocessing
 from node_events import EventEmitter
 from .internals.debug import debug, debugwrapper
 
@@ -18,10 +17,10 @@ class EventQueue(EventEmitter):
     @debugwrapper
     def __init__(self):
         super(EventQueue, self).__init__()
-        self._ended = threading.Event()
-        self._paused = threading.Event()
-        self._running = threading.Event()
-        self._underlayer = queue.Queue()
+        self._ended = multiprocessing.Event()
+        self._paused = multiprocessing.Event()
+        self._running = multiprocessing.Event()
+        self._underlayer = multiprocessing.Queue()
 
     @debugwrapper
     def push(self, coro, args=()):
@@ -44,7 +43,7 @@ class EventQueue(EventEmitter):
             try:
                 self._running.wait()
                 yield self._underlayer.get_nowait()
-            except queue.Empty:
+            except multiprocessing.queues.Empty:
                 if not self.ended():
                     self._pause()
 
@@ -55,7 +54,6 @@ class EventQueue(EventEmitter):
                 [fn(*args) for fn in stack]
             elif typeid == 1:
                 await asyncio.gather(*[corofn(*args) for corofn in stack])
-            self._underlayer.task_done()
         debug('async __startIterator exit')
 
     @debugwrapper
