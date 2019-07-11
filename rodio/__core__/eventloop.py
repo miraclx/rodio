@@ -74,9 +74,13 @@ class EventLoop():
     terminate = stop
 
     @debugwrapper
-    def __closeAllBeforeRaise(self, err):
-        self._queue.closeAll()
-        return err
+    def pause(self):
+        self._queue.pause()
+
+    @debugwrapper
+    def resume(self):
+        self._queue.resume()
+
     @debugwrapper
     def scheduleStop(self):
         if self.ended():
