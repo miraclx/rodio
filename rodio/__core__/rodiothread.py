@@ -12,16 +12,22 @@ from .internals.debug import debug, debugwrapper
 
 class RodioThread(Thread):
     @debugwrapper
-    def __init__(self, target, *, name=None, args=(), kwargs=None, daemon=None):
+    def __init__(self, target, *, name=None, args=(), kwargs=None, daemon=None, killswitch=None):
         super(RodioThread, self).__init__(target=target,
                                           args=args or (),
                                           kwargs=kwargs or {},
                                           daemon=daemon)
         self._ended = Event()
+        self.__killswitch = killswitch
+
         self.set_name(name or self.name)
 
     @debugwrapper
     def stop(self):
+        if self.ended():
+            raise RuntimeError("process already ended")
+        if self.__killswitch:
+            self.__killswitch()
         self._ended.set()
 
     end = stop

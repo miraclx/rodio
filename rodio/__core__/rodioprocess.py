@@ -15,11 +15,14 @@ from .internals.debug import debug, debugwrapper
 class RodioProcess(multiprocessing.context.Process):
 
     @debugwrapper
-    def __init__(self, target, *, name=None, args=(), kwargs=None, daemon=None):
+    def __init__(self, target, *, name=None, args=(), kwargs=None, daemon=None, killswitch=None):
         super(RodioProcess, self).__init__(target=target,
                                            args=args or (),
                                            kwargs=kwargs or {},
                                            daemon=daemon)
+
+        self.__killswitch = killswitch
+
         self._started = multiprocessing.Event()
         self._paused = multiprocessing.Event()
         self.set_name(name or self.name)
@@ -36,10 +39,10 @@ class RodioProcess(multiprocessing.context.Process):
         # self.__checkNotSelfProcess(msg="cant stop process while within itself")
         if self.ended():
             raise RuntimeError("process already ended")
-        if current_process() == self:
-            exit(0)
-        else:
-            super(RodioProcess, self).terminate()
+        if self.__killswitch:
+            self.__killswitch()
+        exit(0) if current_process() is self else super(
+            RodioProcess, self).terminate()
 
     end = stop
     terminate = stop
