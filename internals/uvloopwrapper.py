@@ -6,5 +6,8 @@ Efficient non-blocking event loops for async concurrency and I/O
           Think of this as AsyncIO on steroids
 """
 
-from . import uvloopwrapper
-from . import eventloop
+import uvloop
+
+uvloop.install()
+
+__all__ = []

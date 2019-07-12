@@ -15,13 +15,11 @@ __maintainer__ = "Miraculous Owonubi"
 __email__ = "omiraculous@gmail.com"
 __status__ = "Development"
 
-from .__core__.eventloop import EventLoop, \
-    EventQueue, \
-    RodioThread, \
-    RodioProcess, \
-    getRunningLoop, \
-    get_running_loop,\
-    get_running_process
+from .eventloop import *
+from .eventqueue import *
+from .rodiothread import *
+from .rodioprocess import *
+from internals.uvloopwrapper import *
 
 
 def printprocess(*args, **kwargs):

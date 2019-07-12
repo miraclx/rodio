@@ -10,7 +10,9 @@ import queue
 import asyncio
 import threading
 from node_events import EventEmitter
-from .internals.debug import debug, debugwrapper
+from internals.debug import debug, debugwrapper
+
+__all__ = ['EventQueue']
 
 
 class EventQueue(EventEmitter):
