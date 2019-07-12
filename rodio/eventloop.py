@@ -10,7 +10,7 @@ import threading
 from .eventqueue import EventQueue
 from .rodiothread import RodioThread, current_thread
 # from .rodioprocess import RodioProcess, current_process
-from internals.debug import debug, debugwrapper
+from .internals.debug import debug, debugwrapper
 
 __all__ = ['EventLoop',
            'get_running_loop',

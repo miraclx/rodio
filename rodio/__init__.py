@@ -19,7 +19,7 @@ from .eventloop import *
 from .eventqueue import *
 from .rodiothread import *
 from .rodioprocess import *
-from internals.uvloopwrapper import *
+from .internals.uvloopwrapper import *
 
 
 def printfromprocess(*args, **kwargs):

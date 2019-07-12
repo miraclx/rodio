@@ -7,7 +7,7 @@ Efficient non-blocking event loops for async concurrency and I/O
 """
 
 import threading
-from internals.debug import debug, debugwrapper
+from .internals.debug import debug, debugwrapper
 
 __all__ = ['RodioThread',
            'get_running_thread',
