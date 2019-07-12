@@ -22,6 +22,6 @@ from .rodioprocess import *
 from internals.uvloopwrapper import *
 
 
-def printprocess(*args, **kwargs):
+def printfromprocess(*args, **kwargs):
     process = get_running_process()
     print(f'|{process.name}|> ', *args, **kwargs)
