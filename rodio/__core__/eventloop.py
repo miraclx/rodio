@@ -6,7 +6,7 @@ Efficient non-blocking event loops for async concurrency and I/O
           Think of this as AsyncIO on steroids
 """
 
-import multiprocessing
+import threading
 from .eventqueue import EventQueue
 from .rodiothread import RodioThread, current_thread
 from .rodioprocess import RodioProcess, current_process
@@ -22,10 +22,10 @@ class EventLoop():
 
         self.__block = block
         self.__autostart = autostart
-        self.__queued_exit = multiprocessing.Event()
+        self.__queued_exit = threading.Event()
 
         self._queue = EventQueue()
-        self._process = RodioThread(target=self._run,
+        self._process = RodioThread(target=self._run,  # Works with either RodioThread or RodioProcess
                                     name=self.name,
                                     daemon=daemon,
                                     killswitch=self._queue.end)
