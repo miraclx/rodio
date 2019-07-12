@@ -135,7 +135,7 @@ getCurrentProcess = current_thread
 
 def getRunningLoop(*args):
     loop = getattr(current_thread(), '_eventloop', *args or (None,))
-    if not (args and loop):
+    if not (args or loop):
         raise RuntimeError('no running event loop')
     else:
         return loop
