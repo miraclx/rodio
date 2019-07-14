@@ -8,7 +8,7 @@ Efficient non-blocking event loops for async concurrency and I/O
 
 import queue
 import asyncio
-import threading
+import multiprocessing
 from node_events import EventEmitter
 from .internals.debug import debug, debugwrapper
 
@@ -20,9 +20,9 @@ class EventQueue(EventEmitter):
     @debugwrapper
     def __init__(self):
         super(EventQueue, self).__init__()
-        self._ended = threading.Event()
-        self._paused = threading.Event()
-        self._running = threading.Event()
+        self._ended = multiprocessing.Event()
+        self._paused = multiprocessing.Event()
+        self._running = multiprocessing.Event()
         self._underlayer = queue.Queue()
 
     @debugwrapper
@@ -37,9 +37,8 @@ class EventQueue(EventEmitter):
                 f"{notpassed} item{' defined must' if notpassed == 1 else 's defined must all'} either be a coroutine function or a callable object")
         [stack, typeid] = self.__checkAll(asyncio.iscoroutinefunction, stack, [stack, 1]) or \
             self.__checkAll(callable, stack, [stack, 0])
-        self._underlayer.put_nowait([stack, args, typeid])
-        if self.paused():
-            self._resume()
+        self._underlayer.put([stack, args, typeid])
+        self._resume()
 
     def __stripCoros(self):
         while not self.ended():
