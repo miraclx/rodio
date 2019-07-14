@@ -23,6 +23,7 @@ class EventQueue(EventEmitter):
         self._ended = multiprocessing.Event()
         self._paused = multiprocessing.Event()
         self._running = multiprocessing.Event()
+        self._statusLock = multiprocessing.RLock()
         self._underlayer = multiprocessing.JoinableQueue()
 
     @debugwrapper
@@ -62,9 +63,11 @@ class EventQueue(EventEmitter):
 
     @debugwrapper
     def _resume(self):
+        self._statusLock.acquire(True)
         self.__checkActivityElseRaise()
         self._paused.clear()
         self._running.set()
+        self._statusLock.release()
 
     def start(self):
         self._resume()
@@ -76,9 +79,11 @@ class EventQueue(EventEmitter):
         self.emit('resume')
 
     def _pause(self):
+        self._statusLock.acquire(True)
         self.__checkActivityElseRaise()
         self._paused.set()
         self._running.clear()
+        self._statusLock.release()
 
     @debugwrapper
     def pause(self):
