@@ -65,8 +65,6 @@ class RodioProcess(multiprocessing.context.Process):
         if self.ended():
             raise RuntimeError("can't pause ended process")
         if not self.paused():
-            # self.__checkNotSelfProcess(
-            #     msg="cant pause process while within itself")
             self._paused.set()
             if self.pid:
                 os.kill(self.pid, code)
@@ -89,8 +87,6 @@ class RodioProcess(multiprocessing.context.Process):
             raise RuntimeError(
                 "unstarted process can't be resumed because it couldn't be paused")
         if self.paused():
-            self.__checkNotSelfProcess(
-                self, msg="cant pause process while within itself")
             self._paused.clear()
             os.kill(self.pid, signal.SIGCONT)
         else:
@@ -99,16 +95,11 @@ class RodioProcess(multiprocessing.context.Process):
     def get_pid(self):
         return self.pid
 
-    getPid = get_pid
-
     def ppid(self):
         return self._parent_pid
 
     get_ppid = ppid
-    getPpid = ppid
-    get_parentpid = ppid
     parent_pid = ppid
-    parentPid = ppid
 
     @debugwrapper
     def set_name(self, name):
@@ -122,8 +113,6 @@ class RodioProcess(multiprocessing.context.Process):
     def get_name(self):
         return self.name
 
-    getName = get_name
-
     @debugwrapper
     def set_daemon(self, state):
         if self.has_started:
@@ -133,38 +122,23 @@ class RodioProcess(multiprocessing.context.Process):
             raise TypeError("daemon state must be a boolean datatype")
         self.daemon = state
 
-    setDaemon = set_daemon
-
     def is_daemon(self):
         return self.daemon
-
-    isDaemon = is_daemon
 
     def started(self):
         return self.is_alive() and self._started.is_set()
 
     has_started = started
-    hasStarted = started
 
     def ended(self):
         return self.has_started and not self.is_alive()
 
     has_ended = ended
-    hasEnded = ended
 
     def paused(self):
         return self._paused.is_set()
 
     has_paused = paused
-    hasPaused = paused
-
-    def __checkNotSelfProcess(self, ret=None, *, msg=None):
-        if multiprocessing.current_process() is self:
-            if ret:
-                return ret
-            else:
-                raise RuntimeError(
-                    msg or "cant execute operation within self process")
 
 
 def current_process():
