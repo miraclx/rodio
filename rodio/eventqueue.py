@@ -23,7 +23,7 @@ class EventQueue(EventEmitter):
         self._ended = multiprocessing.Event()
         self._paused = multiprocessing.Event()
         self._running = multiprocessing.Event()
-        self._underlayer = queue.Queue()
+        self._underlayer = multiprocessing.JoinableQueue()
 
     @debugwrapper
     def push(self, coro, args=()):
@@ -44,7 +44,9 @@ class EventQueue(EventEmitter):
         while not self.ended():
             try:
                 self._running.wait()
-                yield self._underlayer.get_nowait()
+                block = self._underlayer.get_nowait()
+                self._underlayer.task_done()
+                yield block
             except queue.Empty:
                 if not self.ended():
                     self._pause()
