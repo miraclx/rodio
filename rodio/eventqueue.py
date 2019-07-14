@@ -6,6 +6,7 @@ Efficient non-blocking event loops for async concurrency and I/O
           Think of this as AsyncIO on steroids
 """
 
+import dill
 import queue
 import asyncio
 import multiprocessing
@@ -38,6 +39,7 @@ class EventQueue(EventEmitter):
                 f"{notpassed} item{' defined must' if notpassed == 1 else 's defined must all'} either be a coroutine function or a callable object")
         [stack, typeid] = self.__checkAll(asyncio.iscoroutinefunction, stack, [stack, 1]) or \
             self.__checkAll(callable, stack, [stack, 0])
+        stack = dill.dumps(stack)
         self._underlayer.put([stack, args, typeid])
         self._resume()
 
@@ -55,6 +57,7 @@ class EventQueue(EventEmitter):
     async def _startIterator(self):
         debug('async __startIterator init')
         for [stack, args, typeid] in self.__stripCoros():
+            stack = dill.loads(stack)
             if typeid == 0:
                 [fn(*args) for fn in stack]
             elif typeid == 1:
