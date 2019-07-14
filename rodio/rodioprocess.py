@@ -35,23 +35,29 @@ class RodioProcess(multiprocessing.context.Process):
 
     @debugwrapper
     def start(self):
-        super(RodioProcess, self).start()
+        multiprocessing.process.BaseProcess.start(self)
         self._started.set()
 
     init = start
 
-    @debugwrapper
-    def stop(self):
-        # self.__checkNotSelfProcess(msg="cant stop process while within itself")
+    def __preexit(self):
         if self.ended():
             raise RuntimeError("process already ended")
         if self.__killswitch:
             self.__killswitch()
-        exit(0) if current_process() is self else super(
-            RodioProcess, self).terminate()
+
+    @debugwrapper
+    def stop(self):
+        self.__preexit()
+        multiprocessing.process.BaseProcess.terminate(self)
 
     end = stop
     terminate = stop
+
+    @debugwrapper
+    def kill(self):
+        self.__preexit()
+        multiprocessing.process.BaseProcess.kill(self)
 
     def __pause(self, action, code):
         if not self.has_started():
