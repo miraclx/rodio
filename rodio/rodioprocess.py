@@ -35,7 +35,7 @@ class RodioProcess(multiprocessing.context.Process):
 
     @debugwrapper
     def start(self):
-        multiprocessing.process.BaseProcess.start(self)
+        super(RodioProcess, self).start()
         self._started.set()
 
     init = start
@@ -49,7 +49,7 @@ class RodioProcess(multiprocessing.context.Process):
     @debugwrapper
     def stop(self):
         self.__preexit()
-        multiprocessing.process.BaseProcess.terminate(self)
+        os.kill(self.pid, signal.SIGTERM)
 
     end = stop
     terminate = stop
@@ -57,7 +57,7 @@ class RodioProcess(multiprocessing.context.Process):
     @debugwrapper
     def kill(self):
         self.__preexit()
-        multiprocessing.process.BaseProcess.kill(self)
+        os.kill(self.pid, signal.SIGKILL)
 
     def __pause(self, action, code):
         if not self.has_started():
