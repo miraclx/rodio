@@ -75,9 +75,10 @@ class EventLoop():
         self._process.join()
 
     @debugwrapper
-    def stop(self):
-        self.__queued_exit.clear()
-        self._process.stop()
+    def stop(self=None):
+        process = self or getRunningLoop()
+        process.__queued_exit.clear()
+        process._process.stop()
 
     end = stop
     terminate = stop
@@ -98,7 +99,8 @@ class EventLoop():
         if self.end_is_queued():
             raise RuntimeError(
                 "this process is already scheduled to stop")
-        self.nextTick(self.stop)
+
+        self.nextTick(EventLoop.stop)
         self.__queued_exit.set()
 
     def set_name(self, name):
