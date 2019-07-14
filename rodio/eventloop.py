@@ -9,7 +9,7 @@ Efficient non-blocking event loops for async concurrency and I/O
 import threading
 from .eventqueue import EventQueue
 from .rodiothread import RodioThread, current_thread
-# from .rodioprocess import RodioProcess, current_process
+from .rodioprocess import RodioProcess, current_process
 from .internals.debug import debug, debugwrapper
 
 __all__ = ['EventLoop',
@@ -34,11 +34,11 @@ class EventLoop():
         self.__queued_exit = threading.Event()
 
         self._queue = EventQueue()
-        self._process = RodioThread(target=self._run,  # Works with either RodioThread or RodioProcess
-                                    name=self.name,
-                                    daemon=daemon,
-                                    killswitch=self._queue.end)
-        self._process._eventloop = self
+        self._process = RodioProcess(target=self._run,  # Works with either RodioThread or RodioProcess
+                                     name=self.name,
+                                     daemon=daemon,
+                                     killswitch=self._queue.end)
+        setattr(self._process, '_eventloop', self)
 
     def _run(self):
         self._queue.start()
@@ -69,7 +69,7 @@ class EventLoop():
 
     @debugwrapper
     def join(self):
-        if current_thread() is self._process:
+        if current_process() is self._process:
             raise RuntimeError(
                 "Cannot join my process into itself, behave!")
         self._process.join()
@@ -132,10 +132,10 @@ class EventLoop():
 # Functions to get the currently running process
 
 
-get_running_process = current_thread
-getRunningProcess = current_thread
-get_current_process = current_thread
-getCurrentProcess = current_thread
+get_running_process = current_process
+getRunningProcess = current_process
+get_current_process = current_process
+getCurrentProcess = current_process
 
 # ========================================================
 
@@ -143,7 +143,7 @@ getCurrentProcess = current_thread
 
 
 def getRunningLoop(*args):
-    loop = getattr(current_thread(), '_eventloop', *args or (None,))
+    loop = getattr(current_process(), '_eventloop', *args or (None,))
     if not (args or loop):
         raise RuntimeError('no running event loop')
     else:
