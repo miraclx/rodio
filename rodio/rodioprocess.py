@@ -9,7 +9,7 @@ Efficient non-blocking event loops for async concurrency and I/O
 import os
 import signal
 import multiprocessing
-from .internals.debug import debug, debugwrapper
+from .internals.debug import LogDebugger
 
 __all__ = ['RodioProcess',
            'get_running_process',
@@ -18,9 +18,9 @@ __all__ = ['RodioProcess',
            'getCurrentProcess']
 
 
-class RodioProcess(multiprocessing.context.Process):
+corelogger = LogDebugger("rodiocore.rodioprocess")
 
-    @debugwrapper
+  @corelogger.debugwrapper
     def __init__(self, target, *, name=None, args=(), kwargs=None, daemon=None, killswitch=None):
         super(RodioProcess, self).__init__(target=target,
                                            args=args or (),
@@ -33,7 +33,7 @@ class RodioProcess(multiprocessing.context.Process):
         self._paused = multiprocessing.Event()
         self.set_name(name or self.name)
 
-    @debugwrapper
+    @corelogger.debugwrapper
     def start(self):
         super(RodioProcess, self).start()
         self._started.set()
@@ -46,7 +46,7 @@ class RodioProcess(multiprocessing.context.Process):
         if self.__killswitch:
             self.__killswitch()
 
-    @debugwrapper
+    @corelogger.debugwrapper
     def stop(self):
         self.__preexit()
         os.kill(self.pid, signal.SIGTERM)
@@ -54,7 +54,7 @@ class RodioProcess(multiprocessing.context.Process):
     end = stop
     terminate = stop
 
-    @debugwrapper
+    @corelogger.debugwrapper
     def kill(self):
         self.__preexit()
         os.kill(self.pid, signal.SIGKILL)
@@ -73,15 +73,15 @@ class RodioProcess(multiprocessing.context.Process):
         else:
             raise RuntimeError("process already paused")
 
-    @debugwrapper
+    @corelogger.debugwrapper
     def pause(self):
         self.__pause('pause', signal.SIGTSTP)
 
-    @debugwrapper
+    @corelogger.debugwrapper
     def halt(self):
         self.__pause('halt', signal.SIGSTOP)
 
-    @debugwrapper
+    @corelogger.debugwrapper
     def resume(self):
         if not self.has_started():
             raise RuntimeError(
@@ -101,7 +101,7 @@ class RodioProcess(multiprocessing.context.Process):
     get_ppid = ppid
     parent_pid = ppid
 
-    @debugwrapper
+    @corelogger.debugwrapper
     def set_name(self, name):
         if not (name and isinstance(name, str)):
             raise RuntimeError(
@@ -113,7 +113,7 @@ class RodioProcess(multiprocessing.context.Process):
     def get_name(self):
         return self.name
 
-    @debugwrapper
+    @corelogger.debugwrapper
     def set_daemon(self, state):
         if self.has_started:
             raise RuntimeError(

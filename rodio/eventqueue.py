@@ -11,14 +11,16 @@ import queue
 import asyncio
 import multiprocessing
 from node_events import EventEmitter
-from .internals.debug import debug, debugwrapper
+from .internals.debug import LogDebugger
 
 __all__ = ['EventQueue']
+
+corelogger = LogDebugger("rodiocore.eventqueue")
 
 
 class EventQueue(EventEmitter):
 
-    @debugwrapper
+    @corelogger.debugwrapper
     def __init__(self):
         super(EventQueue, self).__init__()
         self._ended = multiprocessing.Event()
@@ -27,7 +29,7 @@ class EventQueue(EventEmitter):
         self._statusLock = multiprocessing.RLock()
         self._underlayer = multiprocessing.JoinableQueue()
 
-    @debugwrapper
+    @corelogger.debugwrapper
     def push(self, coro, args=()):
         if self.ended():
             raise RuntimeError(
@@ -55,16 +57,16 @@ class EventQueue(EventEmitter):
                     self._pause()
 
     async def _startIterator(self):
-        debug('async __startIterator init')
+        corelogger.log('async __startIterator init')
         for [stack, args, typeid] in self.__stripCoros():
             stack = dill.loads(stack)
             if typeid == 0:
                 [fn(*args) for fn in stack]
             elif typeid == 1:
                 await asyncio.gather(*[corofn(*args) for corofn in stack])
-        debug('async __startIterator exit')
+        corelogger.log('async __startIterator exit')
 
-    @debugwrapper
+    @corelogger.debugwrapper
     def _resume(self):
         self._statusLock.acquire(True)
         self.__checkActivityElseRaise()
@@ -76,7 +78,7 @@ class EventQueue(EventEmitter):
         self._resume()
         asyncio.run(self._startIterator())
 
-    @debugwrapper
+    @corelogger.debugwrapper
     def resume(self):
         self._resume()
         self.emit('resume')
@@ -88,7 +90,7 @@ class EventQueue(EventEmitter):
         self._running.clear()
         self._statusLock.release()
 
-    @debugwrapper
+    @corelogger.debugwrapper
     def pause(self):
         self._pause()
         self.emit('pause')
@@ -102,7 +104,7 @@ class EventQueue(EventEmitter):
         self._paused.clear()
         self._running.clear()
 
-    @debugwrapper
+    @corelogger.debugwrapper
     def end(self):
         self._end()
         self.emit('end')

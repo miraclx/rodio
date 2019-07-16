@@ -10,7 +10,7 @@ import threading
 from .eventqueue import EventQueue
 from .rodiothread import RodioThread, current_thread
 from .rodioprocess import RodioProcess, current_process
-from .internals.debug import debug, debugwrapper
+from .internals.debug import LogDebugger
 
 __all__ = ['EventLoop',
            'get_running_loop',
@@ -21,11 +21,13 @@ __all__ = ['EventLoop',
            'getCurrentEventloop',
            'get_current_eventloop']
 
+corelogger = LogDebugger("rodiocore.eventloop")
+
 
 class EventLoop():
     _queue = _process = __block = __autostarted = __queued_exit = None
 
-    @debugwrapper
+    @corelogger.debugwrapper
     def __init__(self, name=None, *, autostart=True, block=False, daemon=False):
         self.name = name or 'rodioeventloop'
 
@@ -43,7 +45,7 @@ class EventLoop():
     def _run(self):
         self._queue.start()
 
-    @debugwrapper
+    @corelogger.debugwrapper
     def nextTick(self, coro, *args):
         if self.ended():
             raise RuntimeError("Can't enqueue items to the ended process")
@@ -55,7 +57,7 @@ class EventLoop():
             self.start()
             self.__autostarted = True
 
-    @debugwrapper
+    @corelogger.debugwrapper
     def start(self):
         if self.__autostarted:
             raise RuntimeError("EventLoop has been autostarted previously. assign %s on the EventLoop constructor to disable this"
@@ -67,14 +69,14 @@ class EventLoop():
         if self.__block:
             self.join()
 
-    @debugwrapper
+    @corelogger.debugwrapper
     def join(self):
         if current_process() is self._process:
             raise RuntimeError(
                 "Cannot join my process into itself, behave!")
         self._process.join()
 
-    @debugwrapper
+    @corelogger.debugwrapper
     def stop(self=None):
         process = self or getRunningLoop()
         process.__queued_exit.clear()
@@ -83,15 +85,15 @@ class EventLoop():
     end = stop
     terminate = stop
 
-    @debugwrapper
+    @corelogger.debugwrapper
     def pause(self):
         self._queue.pause()
 
-    @debugwrapper
+    @corelogger.debugwrapper
     def resume(self):
         self._queue.resume()
 
-    @debugwrapper
+    @corelogger.debugwrapper
     def scheduleStop(self):
         if self.ended():
             raise RuntimeError(
