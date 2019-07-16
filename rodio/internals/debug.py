@@ -15,10 +15,12 @@ class LogDebugger:
             raise ValueError(
                 "The identifier for the debugger already exists within the stack")
         self.__debug_id__ = identifier
+        self.__clearedToPrint = hasArg(
+            '--DEBUG', *(f'--DEBUG={identifier}',) if identifier else ())
         debugLoggers[identifier] = self
 
     def log(self, fn, *args):
-        if hasArg('--DEBUG', *(f'--DEBUG={self.__debug_id__}',) if self.__debug_id__ else ()):
+        if self.__clearedToPrint:
             print(f'[\x1b[33mDEBUG\x1b[0m@\x1b[34m{datetime.now().strftime("%T")}\x1b[0m] [\x1b[32m{fn}\x1b[0m]%s' % (
                 f': {", ".join(map(str, args))}' if len(args) else ''))
 
