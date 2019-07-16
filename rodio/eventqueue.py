@@ -38,7 +38,7 @@ class EventQueue(EventEmitter):
         notpassed = list(filter(lambda x: not callable(x), stack))
         if notpassed:
             raise RuntimeError(
-                f"{notpassed} item{' defined must' if notpassed == 1 else 's defined must all'} either be a coroutine function or a callable object")
+                f"{notpassed} item{' defined must' if len(notpassed) == 1 else 's defined must all'} either be a coroutine function or a callable object")
         [stack, typeid] = self.__checkAll(asyncio.iscoroutinefunction, stack, [stack, 1]) or \
             self.__checkAll(callable, stack, [stack, 0])
         stack = dill.dumps(stack)
