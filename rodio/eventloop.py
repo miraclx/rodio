@@ -102,8 +102,8 @@ class EventLoop():
             raise RuntimeError(
                 "this process is already scheduled to stop")
 
-        self.nextTick(EventLoop.stop)
         self.__queued_exit.set()
+        self.nextTick(EventLoop.stop)
 
     def set_name(self, name):
         if not (name and isinstance(name, str)):
