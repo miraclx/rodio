@@ -73,7 +73,7 @@ class EventLoop():
     def join(self):
         if current_process() is self._process:
             raise RuntimeError(
-                "Cannot join my process into itself, behave!")
+                "You just tried to merge me and myself with my `join()` method... lol, you didn't mean that")
         self._process.join()
 
     @corelogger.debugwrapper
@@ -134,8 +134,6 @@ class EventLoop():
 # ========================================================
 
 # Functions to get the currently running process
-
-
 get_running_process = current_process
 getRunningProcess = current_process
 get_current_process = current_process
