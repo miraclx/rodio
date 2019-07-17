@@ -20,7 +20,11 @@ __all__ = ['RodioProcess',
 
 corelogger = LogDebugger("rodiocore.rodioprocess")
 
-  @corelogger.debugwrapper
+
+class RodioProcess(multiprocessing.context.Process):
+    _paused = _started = __killswitch = None
+
+    @corelogger.debugwrapper
     def __init__(self, target, *, name=None, args=(), kwargs=None, daemon=None, killswitch=None):
         super(RodioProcess, self).__init__(target=target,
                                            args=args or (),
