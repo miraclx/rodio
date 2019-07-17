@@ -48,10 +48,10 @@ class EventQueue(EventEmitter):
     def __stripCoros(self):
         while not self.ended():
             try:
-                self._running.wait()
-                block = self._underlayer.get_nowait()
-                self._underlayer.task_done()
-                yield block
+                if self._running.wait():
+                    block = self._underlayer.get_nowait()
+                    self._underlayer.task_done()
+                    yield block
             except queue.Empty:
                 if not self.ended():
                     self._pause()
