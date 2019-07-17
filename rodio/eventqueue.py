@@ -73,11 +73,10 @@ class EventQueue(EventEmitter):
 
     @corelogger.debugwrapper
     def _resume(self):
-        self._statusLock.acquire(True)
         self.__checkActivityElseRaise()
-        self._paused.clear()
-        self._running.set()
-        self._statusLock.release()
+        with self._statusLock:
+            self._paused.clear()
+            self._running.set()
 
     def start(self):
         self._resume()
@@ -89,11 +88,10 @@ class EventQueue(EventEmitter):
         self.emit('resume')
 
     def _pause(self):
-        self._statusLock.acquire(True)
         self.__checkActivityElseRaise()
-        self._paused.set()
-        self._running.clear()
-        self._statusLock.release()
+        with self._statusLock:
+            self._paused.set()
+            self._running.clear()
 
     @corelogger.debugwrapper
     def pause(self):
@@ -102,9 +100,8 @@ class EventQueue(EventEmitter):
 
     def _end(self):
         self.__checkActivityElseRaise()
-        self._running._cond.acquire()
-        self._running._cond.notify()
-        self._running._cond.release()
+        with self._running._cond:
+            self._running._cond.notify()
         self._ended.set()
         self._paused.clear()
         self._running.clear()
