@@ -27,6 +27,7 @@ class EventQueue(EventEmitter):
         self._paused = multiprocessing.Event()
         self._running = multiprocessing.Event()
         self._statusLock = multiprocessing.RLock()
+        self._queueMgmtLock = multiprocessing.RLock()
         self._underlayer = multiprocessing.JoinableQueue()
 
     @corelogger.debugwrapper
@@ -42,19 +43,23 @@ class EventQueue(EventEmitter):
         [stack, typeid] = self.__checkAll(asyncio.iscoroutinefunction, stack, [stack, 1]) or \
             self.__checkAll(callable, stack, [stack, 0])
         stack = dill.dumps(stack)
-        self._underlayer.put([stack, args, typeid])
-        self._resume()
+        with self._queueMgmtLock:
+            self._underlayer.put([stack, args, typeid])
+            self._resume()
 
     def __stripCoros(self):
         while not self.ended():
             try:
                 if self._running.wait():
+                    self._queueMgmtLock.acquire()
                     block = self._underlayer.get_nowait()
+                    self._queueMgmtLock.release()
                     self._underlayer.task_done()
                     yield block
             except queue.Empty:
                 if not self.ended():
                     self._pause()
+                self._queueMgmtLock.release()
 
     async def _startIterator(self):
         corelogger.log('async __startIterator init')
