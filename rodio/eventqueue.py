@@ -43,22 +43,48 @@ class EventQueue(EventEmitter):
         [stack, typeid] = self.__checkAll(asyncio.iscoroutinefunction, stack, [stack, 1]) or \
             self.__checkAll(callable, stack, [stack, 0])
         stack = dill.dumps(stack)
+
+        corelogger.log("push", "acquiring to push...")
         with self._queueMgmtLock:
+            corelogger.log("push", "acquired to push")
+            corelogger.log("push pre  put len", self._underlayer.qsize())
             self._underlayer.put([stack, args, typeid])
+            corelogger.log("push post put len", self._underlayer.qsize())
+            corelogger.log("push", "strict resume")
             self._resume()
 
     def __stripCoros(self):
         while not self.ended():
             try:
+                corelogger.log("__stripCoros", "acquiring to begin extract")
                 if self._running.wait():
+                    corelogger.log(
+                        "__stripCoros", "acquired to begin exteact!")
+                    corelogger.log("__stripCoros", "acquiring to get...")
                     self._queueMgmtLock.acquire()
+                    corelogger.log("__stripCoros", "acquired to get")
+                    corelogger.log("__stripCoros pre  get len",
+                                   self._underlayer.qsize())
                     block = self._underlayer.get_nowait()
+                    corelogger.log("__stripCoros post get len",
+                                   self._underlayer.qsize())
                     self._queueMgmtLock.release()
                     self._underlayer.task_done()
                     yield block
+                else:
+                    corelogger.log("__stripCoros", "run timeout")
             except queue.Empty:
+                corelogger.log("__stripCoros empty", "queue empty")
+                corelogger.log("__stripCoros empty get len",
+                               self._underlayer.qsize())
                 if not self.ended():
-                    self._pause()
+                    if self._underlayer.qsize() > 0:
+                        corelogger.log(
+                            "__stripCoros empty", "skipping pause after detecting items in queue")
+                    else:
+                        corelogger.log(
+                            "__stripCoros empty", "pausing on queue empty")
+                        self._pause()
                 self._queueMgmtLock.release()
 
     async def _startIterator(self):
@@ -74,7 +100,9 @@ class EventQueue(EventEmitter):
     @corelogger.debugwrapper
     def _resume(self):
         self.__checkActivityElseRaise()
+        corelogger.log("_resume", "acquiring to resume...")
         with self._statusLock:
+            corelogger.log("_resume", "acquired to resume")
             self._paused.clear()
             self._running.set()
 
@@ -89,7 +117,9 @@ class EventQueue(EventEmitter):
 
     def _pause(self):
         self.__checkActivityElseRaise()
+        corelogger.log("_pause", "acquiring to pause...")
         with self._statusLock:
+            corelogger.log("_pause", "acquired to pause")
             self._paused.set()
             self._running.clear()
 
