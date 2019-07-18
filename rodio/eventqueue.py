@@ -59,7 +59,7 @@ class EventQueue(EventEmitter):
                 corelogger.log("__stripCoros", "acquiring to begin extract")
                 if self._running.wait():
                     corelogger.log(
-                        "__stripCoros", "acquired to begin exteact!")
+                        "__stripCoros", "acquired to begin extract!")
                     corelogger.log("__stripCoros", "acquiring to get...")
                     with self._queueMgmtLock:
                         corelogger.log("__stripCoros", "acquired to get")
@@ -70,6 +70,8 @@ class EventQueue(EventEmitter):
                             corelogger.log("__stripCoros post get len",
                                            self._underlayer.qsize())
                             self._underlayer.task_done()
+                        else:
+                            raise queue.Empty
                     yield block
                 else:
                     corelogger.log("__stripCoros", "run timeout")
