@@ -106,13 +106,13 @@ class EventLoop():
         if not (name and isinstance(name, str)):
             raise RuntimeError(
                 "<name> parameter must be a specified str instance")
-        self.name = name
-        self._process.set_name(self.name)
+        self._name = name
+        self._process.set_name(self._name)
 
     setName = set_name
 
     def get_name(self):
-        return self.name
+        return self._name
 
     getName = get_name
 
