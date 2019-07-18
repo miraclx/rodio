@@ -76,17 +76,18 @@ class EventQueue(EventEmitter):
                 else:
                     corelogger.log("__stripCoros", "run timeout")
             except queue.Empty:
-                corelogger.log("__stripCoros empty", "queue empty")
-                corelogger.log("__stripCoros empty get len",
-                               self._underlayer.qsize())
-                if not self.ended():
-                    if self._underlayer.qsize() > 0:
-                        corelogger.log(
-                            "__stripCoros empty", "skipping pause after detecting items in queue")
-                    else:
-                        corelogger.log(
-                            "__stripCoros empty", "pausing on queue empty")
-                        self._pause()
+                with self._queueMgmtLock:
+                    corelogger.log("__stripCoros empty", "queue empty")
+                    corelogger.log("__stripCoros empty get len",
+                                   self._underlayer.qsize())
+                    if not self.ended():
+                        if self._underlayer.qsize() > 0:
+                            corelogger.log(
+                                "__stripCoros empty", "skipping pause after detecting items in queue")
+                        else:
+                            corelogger.log(
+                                "__stripCoros empty", "pausing on queue empty")
+                            self._pause()
 
     async def _startIterator(self):
         corelogger.log('async __startIterator init')
