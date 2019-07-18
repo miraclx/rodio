@@ -26,8 +26,8 @@ class EventQueue(EventEmitter):
         self._ended = multiprocessing.Event()
         self._paused = multiprocessing.Event()
         self._running = multiprocessing.Event()
-        self._statusLock = multiprocessing.RLock()
-        self._queueMgmtLock = multiprocessing.RLock()
+        self._statusLock = multiprocessing.Lock()
+        self._queueMgmtLock = multiprocessing.Lock()
         self._underlayer = multiprocessing.JoinableQueue()
         self._pause()
 
