@@ -45,6 +45,8 @@ class RodioProcess(multiprocessing.context.Process):
     def __preexit(self):
         if self.ended():
             raise RuntimeError("process already ended")
+        if not self.started():
+            raise RuntimeError("can't end a process before it starts")
         if self.__killswitch:
             self.__killswitch()
 
