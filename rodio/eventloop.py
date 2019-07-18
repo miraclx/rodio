@@ -59,7 +59,7 @@ class EventLoop():
             raise RuntimeError("EventLoop has been autostarted previously. assign %s on the EventLoop constructor to disable this"
                                % 'autostart=False')
         if self.started():
-            raise RuntimeError("EventLoop has been started already. Can't start a process beyond once%s"
+            raise RuntimeError("EventLoop has been previously started. They can only be started once%s"
                                % '')
         self._process.start()
         if self.__block:
@@ -117,6 +117,9 @@ class EventLoop():
 
     def started(self):
         return self._process.started()
+
+    def is_alive(self):
+        return self._process.is_alive()
 
     def ended(self):
         return self._process.ended() and self._queue.ended()
