@@ -29,6 +29,7 @@ class EventQueue(EventEmitter):
         self._statusLock = multiprocessing.RLock()
         self._queueMgmtLock = multiprocessing.RLock()
         self._underlayer = multiprocessing.JoinableQueue()
+        self._pause()
 
     @corelogger.debugwrapper
     def push(self, coro, args=()):
