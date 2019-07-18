@@ -61,15 +61,15 @@ class EventQueue(EventEmitter):
                     corelogger.log(
                         "__stripCoros", "acquired to begin exteact!")
                     corelogger.log("__stripCoros", "acquiring to get...")
-                    self._queueMgmtLock.acquire()
-                    corelogger.log("__stripCoros", "acquired to get")
-                    corelogger.log("__stripCoros pre  get len",
-                                   self._underlayer.qsize())
-                    block = self._underlayer.get_nowait()
-                    corelogger.log("__stripCoros post get len",
-                                   self._underlayer.qsize())
-                    self._queueMgmtLock.release()
-                    self._underlayer.task_done()
+                    with self._queueMgmtLock:
+                        corelogger.log("__stripCoros", "acquired to get")
+                        if self._underlayer.qsize():
+                            corelogger.log("__stripCoros pre  get len",
+                                           self._underlayer.qsize())
+                            block = self._underlayer.get()
+                            corelogger.log("__stripCoros post get len",
+                                           self._underlayer.qsize())
+                            self._underlayer.task_done()
                     yield block
                 else:
                     corelogger.log("__stripCoros", "run timeout")
@@ -85,7 +85,6 @@ class EventQueue(EventEmitter):
                         corelogger.log(
                             "__stripCoros empty", "pausing on queue empty")
                         self._pause()
-                self._queueMgmtLock.release()
 
     async def _startIterator(self):
         corelogger.log('async __startIterator init')
