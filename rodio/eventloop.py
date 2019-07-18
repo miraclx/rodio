@@ -22,10 +22,11 @@ corelogger = LogDebugger("rodiocore.eventloop")
 
 
 class EventLoop():
-    _queue = _process = __block = __autostarted = __queued_exit = None
+    _name = _queue = _process = __block = __autostarted = __queued_exit = None
 
     @corelogger.debugwrapper
     def __init__(self, name=None, *, autostart=True, block=False, daemon=False):
+        self._name = name or 'RodioEventLoop'
         self.__block = block
         self.__autostart = autostart
         self.__queued_exit = threading.Event()
