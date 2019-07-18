@@ -68,7 +68,7 @@ class EventLoop():
 
     @corelogger.debugwrapper
     def join(self):
-        if current_process() is self._process:
+        if get_current_process() is self._process:
             raise RuntimeError(
                 "You just tried to merge me and myself with my `join()` method... lol, you didn't mean that")
         self._process.join()
