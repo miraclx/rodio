@@ -128,7 +128,7 @@ class EventLoop():
         return self.__queued_exit.is_set()
 
     def paused(self):
-        return self._queue.paused()
+        return self._queue.paused() or self._process.paused()
 
 
 # ========================================================
