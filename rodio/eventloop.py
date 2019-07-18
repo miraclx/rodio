@@ -26,17 +26,16 @@ class EventLoop():
 
     @corelogger.debugwrapper
     def __init__(self, name=None, *, autostart=True, block=False, daemon=False):
-        self.name = name or 'rodioeventloop'
-
         self.__block = block
         self.__autostart = autostart
         self.__queued_exit = threading.Event()
 
         self._queue = EventQueue()
         self._process = RodioProcess(target=self._run,  # Works with either RodioThread or RodioProcess
-                                     name=self.name,
+                                     name=name,
                                      daemon=daemon,
                                      killswitch=self._queue.end)
+        self.name = self._process.name
         setattr(self._process, '_eventloop', self)
 
     def _run(self):
