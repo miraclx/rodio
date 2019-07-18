@@ -135,7 +135,7 @@ class RodioProcess(multiprocessing.context.Process):
     has_started = started
 
     def ended(self):
-        return self.has_started and not self.is_alive()
+        return self.has_started() and not self.is_alive()
 
     has_ended = ended
 
