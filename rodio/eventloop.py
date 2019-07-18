@@ -130,6 +130,16 @@ class EventLoop():
     def paused(self):
         return self._queue.paused() or self._process.paused()
 
+    def __enter__(self):
+        if self.__block:
+            raise RuntimeError(
+                "Blocking eventloops can't be used in a `with` statement")
+        self.start()
+        return self
+
+    def __exit__(self, ttype, value, traceback):
+        self.join()
+        return ttype is None
 
 # ========================================================
 
