@@ -39,6 +39,22 @@ class EventLoop():
         self.name = self._process.name
         setattr(self._process, '_eventloop', self)
 
+    def __repr__(self):
+        status = []
+        if self.started():
+            status.append("started")
+        if self.is_alive():
+            status.append("alive")
+        if not self.ended():
+            status.append("paused" if self.paused() else "running")
+        elif self.end_is_queued():
+            status.append("ending")
+        else:
+            exitcode = self._process.exitcode
+            status.append(
+                f"stopped {f'[exitcode = {exitcode}]' if exitcode else ''}")
+        return '<%s(%s, %s)>' % (type(self).__name__, self._name, ", ".join(status))
+
     def _run(self):
         self._queue.start()
 
