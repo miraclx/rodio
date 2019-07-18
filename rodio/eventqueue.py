@@ -64,15 +64,14 @@ class EventQueue(EventEmitter):
                     corelogger.log("__stripCoros", "acquiring to get...")
                     with self._queueMgmtLock:
                         corelogger.log("__stripCoros", "acquired to get")
-                        if self._underlayer.qsize():
-                            corelogger.log("__stripCoros pre  get len",
-                                           self._underlayer.qsize())
-                            block = self._underlayer.get()
-                            corelogger.log("__stripCoros post get len",
-                                           self._underlayer.qsize())
-                            self._underlayer.task_done()
-                        else:
+                        if self._underlayer.qsize() == 0:
                             raise queue.Empty
+                        corelogger.log("__stripCoros pre  get len",
+                                       self._underlayer.qsize())
+                        block = self._underlayer.get()
+                        corelogger.log("__stripCoros post get len",
+                                       self._underlayer.qsize())
+                        self._underlayer.task_done()
                     yield block
                 else:
                     corelogger.log("__stripCoros", "run timeout")
