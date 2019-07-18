@@ -13,9 +13,7 @@ from .internals.debug import LogDebugger
 
 __all__ = ['RodioProcess',
            'get_running_process',
-           'getRunningProcess',
-           'get_current_process',
-           'getCurrentProcess']
+           'get_current_process']
 
 
 corelogger = LogDebugger("rodiocore.rodioprocess")
@@ -150,6 +148,4 @@ def current_process():
 
 
 get_running_process = current_process
-getRunningProcess = current_process
 get_current_process = current_process
-getCurrentProcess = current_process

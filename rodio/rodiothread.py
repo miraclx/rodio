@@ -11,9 +11,7 @@ from .internals.debug import LogDebugger
 
 __all__ = ['RodioThread',
            'get_running_thread',
-           'getRunningThread',
-           'get_current_thread',
-           'getCurrentThread']
+           'get_current_thread']
 
 corelogger = LogDebugger("rodiocore.rodiothread")
 
@@ -88,6 +86,4 @@ def current_thread():
 
 
 get_running_thread = current_thread
-getRunningThread = current_thread
 get_current_thread = current_thread
-getCurrentThread = current_thread

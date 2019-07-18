@@ -7,18 +7,15 @@ Efficient non-blocking event loops for async concurrency and I/O
 """
 
 import threading
-from .eventqueue import EventQueue
-from .rodiothread import RodioThread, current_thread
-from .rodioprocess import RodioProcess, current_process
+from .eventqueue import *
+from .rodiothread import *
+from .rodioprocess import *
 from .internals.debug import LogDebugger
 
 __all__ = ['EventLoop',
            'get_running_loop',
            'get_current_loop',
-           'getCurrentLoop',
-           'getRunningEventloop',
            'get_running_eventloop',
-           'getCurrentEventloop',
            'get_current_eventloop']
 
 corelogger = LogDebugger("rodiocore.eventloop")
@@ -131,13 +128,6 @@ class EventLoop():
     def paused(self):
         return self._queue.paused()
 
-# ========================================================
-
-# Functions to get the currently running process
-get_running_process = current_process
-getRunningProcess = current_process
-get_current_process = current_process
-getCurrentProcess = current_process
 
 # ========================================================
 
@@ -145,7 +135,7 @@ getCurrentProcess = current_process
 
 
 def getRunningLoop(*args):
-    loop = getattr(current_process(), '_eventloop', *args or (None,))
+    loop = getattr(get_current_process(), '_eventloop', *args or (None,))
     if not (args or loop):
         raise RuntimeError('no running event loop')
     else:
@@ -154,11 +144,8 @@ def getRunningLoop(*args):
 
 get_running_loop = getRunningLoop
 get_current_loop = getRunningLoop
-getCurrentLoop = getRunningLoop
 
-getRunningEventloop = getRunningLoop
 get_running_eventloop = getRunningLoop
-getCurrentEventloop = getRunningLoop
 get_current_eventloop = getRunningLoop
 
 # ========================================================

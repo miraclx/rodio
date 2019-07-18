@@ -159,15 +159,11 @@ class EventQueue(EventEmitter):
     def paused(self):
         return self._paused.is_set() and not self._running.is_set()
 
-    isPaused = paused
     is_paused = paused
-    hasPaused = paused
     has_paused = paused
 
     def ended(self):
         return self._ended.is_set()
 
-    isEnded = ended
-    hasEnded = ended
     is_ended = ended
     has_ended = ended
