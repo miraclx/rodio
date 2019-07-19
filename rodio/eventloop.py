@@ -178,6 +178,16 @@ get_running_eventloop = getRunningLoop
 get_current_eventloop = getRunningLoop
 
 # ========================================================
+
+
+def loadFileUnderLoop(loop, name):
+    if not EventLoop.is_eventloop(loop):
+        raise TypeError("loop argument must be a valid EventLoop object")
+    if loop.ended():
+        raise RuntimeError("Can't load a file under an ended eventloop")
+    loop.nextTick(__import__, name)
+
+
 """
 
 with EventLoop() as process:
