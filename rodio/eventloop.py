@@ -33,7 +33,7 @@ class EventLoop():
 
         self._queue = EventQueue()
         self._process = RodioProcess(target=self._run,  # Works with either RodioThread or RodioProcess
-                                     name=name,
+                                     name=self._name,
                                      daemon=daemon,
                                      killswitch=self._queue.end)
         self.name = self._process.name
