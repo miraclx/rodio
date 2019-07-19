@@ -158,6 +158,10 @@ class EventLoop():
             self.join()
         return ttype is None
 
+    @classmethod
+    def is_eventloop(cls, loop):
+        return isinstance(loop, cls)
+
 # ========================================================
 
 # Functions to get current event loop
