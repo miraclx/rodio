@@ -142,7 +142,7 @@ class EventLoop():
                 "this process is already scheduled to stop")
 
         self.__queued_exit.set()
-        self.nextTick(EventLoop.stop)
+        self._queue.push(EventLoop.stop)
 
     def set_name(self, name):
         if not (name and isinstance(name, str)):
