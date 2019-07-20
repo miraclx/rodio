@@ -99,12 +99,24 @@ class EventLoop():
     terminate = stop
 
     @corelogger.debugwrapper
-    def pause(self):
-        self._queue.pause()
+    def pause(self=None):
+        process = self or getRunningLoop()
+        print(process, "queue.pause")
+        process._queue.pause()
+
+    @corelogger.debugwrapper
+    def pause_process(self=None):
+        process = self or getRunningLoop()
+        print(process, "process.pause")
+        process._process.pause()
 
     @corelogger.debugwrapper
     def resume(self):
         self._queue.resume()
+
+    @corelogger.debugwrapper
+    def resume_process(self):
+        self._process.resume()
 
     @corelogger.debugwrapper
     def scheduleStop(self):
