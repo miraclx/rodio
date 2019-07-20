@@ -7,6 +7,7 @@ Efficient non-blocking event loops for async concurrency and I/O
 """
 
 import threading
+import multiprocessing
 from .eventqueue import *
 from .rodiothread import *
 from .rodioprocess import *
@@ -214,7 +215,17 @@ def loadFileUnderLoop(loop, name):
         raise TypeError("loop argument must be a valid EventLoop object")
     if loop.ended():
         raise RuntimeError("Can't load a file under an ended eventloop")
-    loop.nextTick(__import__, name)
+    if not hasattr(loop, '__module_completed'):
+        setattr(loop, '__module_completed', {})
+
+    loop.__module_completed[name] = multiprocessing.Event()
+
+    def import_decoy(name):
+        __import__(name)
+        getRunningLoop().__module_completed[name].set()
+
+    loop.nextTick(import_decoy, name)
+    return loop.__module_completed[name]
 
 
 """
