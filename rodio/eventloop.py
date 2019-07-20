@@ -36,7 +36,6 @@ class EventLoop():
                                      name=self._name,
                                      daemon=daemon,
                                      killswitch=self._queue.end)
-        self.name = self._process.name
         setattr(self._process, '_eventloop', self)
 
     def __repr__(self):
