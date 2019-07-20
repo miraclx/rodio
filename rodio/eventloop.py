@@ -119,6 +119,20 @@ class EventLoop():
         self._process.resume()
 
     @corelogger.debugwrapper
+    def schedulePause(self):
+        if self.ended():
+            raise RuntimeError(
+                "can't queue a queue pause on an ended process")
+        self._queue.push(EventLoop.pause)
+
+    @corelogger.debugwrapper
+    def scheduleProcessPause(self):
+        if self.ended():
+            raise RuntimeError(
+                "can't queue a process pause on an ended process")
+        self._queue.push(EventLoop.pause_process)
+
+    @corelogger.debugwrapper
     def scheduleStop(self):
         if self.ended():
             raise RuntimeError(
