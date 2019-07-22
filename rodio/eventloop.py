@@ -17,9 +17,7 @@ from .internals.debug import LogDebugger
 
 __all__ = ['EventLoop',
            'get_running_loop',
-           'get_current_loop',
-           'get_running_eventloop',
-           'get_current_eventloop']
+           'get_current_loop']
 
 corelogger = LogDebugger("rodiocore.eventloop")
 
@@ -36,14 +34,15 @@ class EventLoop():
     _name = _queue = _process = __block = __autostarted = __queued_exit = None
 
     @corelogger.debugwrapper
-    def __init__(self, name=None, *, autostart=True, block=False, daemon=False):
+    def __init__(self, name=None, *, autostart=True, block=False, daemon=False, self_pause=True):
         self._name = name or 'RodioEventLoop'
         self.__block = block
         self.__autostart = autostart
+        self.__self_pause = self_pause
         self.__queued_exit = threading.Event()
 
         self._queue = EventQueue()
-        self._process = RodioProcess(target=self._run,  # Works with either RodioThread or RodioProcess
+        self._process = RodioProcess(target=self._run,
                                      name=self._name,
                                      daemon=daemon,
                                      killswitch=self._queue.end)
@@ -108,16 +107,22 @@ class EventLoop():
     end = stop
     terminate = stop
 
+    def __raiseIfNotSelfPausable(self):
+        if get_running_loop() is self and not self.__self_pause:
+            raise RuntimeError(
+                f"can't pause the eventloop named [{self.get_name()}] from within it's process%s"
+                % '')
+
     @corelogger.debugwrapper
     def pause(self=None):
         process = self or get_running_loop()
-        print(process, "queue.pause")
+        process.__raiseIfNotSelfPausable()
         process._queue.pause()
 
     @corelogger.debugwrapper
     def pause_process(self=None):
         process = self or get_running_loop()
-        print(process, "process.pause")
+        process.__raiseIfNotSelfPausable()
         process._process.pause()
 
     @corelogger.debugwrapper
