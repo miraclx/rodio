@@ -101,7 +101,7 @@ class EventLoop():
 
     @corelogger.debugwrapper
     def stop(self=None):
-        process = self or getRunningLoop()
+        process = self or get_running_loop()
         process.__queued_exit.clear()
         process._process.stop()
 
@@ -110,13 +110,13 @@ class EventLoop():
 
     @corelogger.debugwrapper
     def pause(self=None):
-        process = self or getRunningLoop()
+        process = self or get_running_loop()
         print(process, "queue.pause")
         process._queue.pause()
 
     @corelogger.debugwrapper
     def pause_process(self=None):
-        process = self or getRunningLoop()
+        process = self or get_running_loop()
         print(process, "process.pause")
         process._process.pause()
 
@@ -225,19 +225,16 @@ class EventLoop():
 # Functions to get current event loop
 
 
-def getRunningLoop(*args):
-    loop = getattr(get_current_process(), '_eventloop', *args or (None,))
+def get_current_loop(*args):
+    loop: EventLoop = getattr(get_current_process(),
+                              '_eventloop', *args or (None,))
     if not (args or loop):
         raise RuntimeError('no running event loop')
     else:
         return loop
 
 
-get_running_loop = getRunningLoop
-get_current_loop = getRunningLoop
-
-get_running_eventloop = getRunningLoop
-get_current_eventloop = getRunningLoop
+get_running_loop = get_current_loop
 
 # ========================================================
 
