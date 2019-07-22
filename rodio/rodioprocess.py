@@ -145,9 +145,9 @@ class RodioProcess(multiprocessing.context.Process):
     has_paused = paused
 
 
-def current_process():
+
+def get_current_process():
     return multiprocessing.current_process()
 
 
-get_running_process = current_process
-get_current_process = current_process
+get_running_process = get_current_process
