@@ -6,8 +6,10 @@ Efficient non-blocking event loops for async concurrency and I/O
           Think of this as AsyncIO on steroids
 """
 
+import importlib
 import threading
 import multiprocessing
+import posixpath as xpath
 from .eventqueue import *
 from .rodiothread import *
 from .rodioprocess import *
@@ -20,6 +22,14 @@ __all__ = ['EventLoop',
            'get_current_eventloop']
 
 corelogger = LogDebugger("rodiocore.eventloop")
+
+
+class LoopModuleStruct:
+    def __init__(self, loop, path):
+        self.path = path
+        self.loader = importlib.machinery.SourceFileLoader(
+            loop.get_name(), path)
+        self.is_loaded = multiprocessing.Event()
 
 
 class EventLoop():
@@ -144,6 +154,28 @@ class EventLoop():
         self.__queued_exit.set()
         self._queue.push(EventLoop.stop)
 
+    @corelogger.debugwrapper
+    def load_module(self, path: str, *, block=True):
+        if not EventLoop.is_eventloop(self):
+            raise TypeError("loop argument must be a valid EventLoop object")
+        if self.ended():
+            raise RuntimeError("Can't load a file under an ended eventloop")
+        if isinstance(getattr(self, '_module_stack', None), LoopModuleStruct):
+            raise RuntimeError(
+                "This loop has already been attached a module, this can only be done once")
+        struct = LoopModuleStruct(self, xpath.abspath(path))
+        self._module_stack = struct
+
+        def import_decoy():
+            struct = get_running_loop()._module_stack
+            struct.loader.load_module()
+            struct.is_loaded.set()
+        self.nextTick(import_decoy)
+        if not block:
+            return struct.is_loaded
+        struct.is_loaded.wait()
+        self._queue._paused.wait()
+
     def set_name(self, name):
         if not (name and isinstance(name, str)):
             raise RuntimeError(
@@ -208,24 +240,6 @@ get_running_eventloop = getRunningLoop
 get_current_eventloop = getRunningLoop
 
 # ========================================================
-
-
-def loadFileUnderLoop(loop, name):
-    if not EventLoop.is_eventloop(loop):
-        raise TypeError("loop argument must be a valid EventLoop object")
-    if loop.ended():
-        raise RuntimeError("Can't load a file under an ended eventloop")
-    if not hasattr(loop, '__module_completed'):
-        setattr(loop, '__module_completed', {})
-
-    loop.__module_completed[name] = multiprocessing.Event()
-
-    def import_decoy(name):
-        __import__(name)
-        getRunningLoop().__module_completed[name].set()
-
-    loop.nextTick(import_decoy, name)
-    return loop.__module_completed[name]
 
 
 """
