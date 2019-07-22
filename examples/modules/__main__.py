@@ -1,8 +1,10 @@
-from rodio import EventLoop, printfromprocess
-from rodio.internals.parther import getTransformer
 import sys
 import posixpath as path
 sys.path.append(path.normpath(path.join(path.dirname(__file__), '../..')))
+
+
+from rodio.internals.parther import getTransformer
+from rodio import EventLoop, printfromprocess
 
 
 tx = getTransformer(__file__)
