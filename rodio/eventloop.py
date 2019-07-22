@@ -248,13 +248,3 @@ def get_current_loop(*args):
 get_running_loop = get_current_loop
 
 # ========================================================
-
-
-"""
-
-with EventLoop() as process:
-    process.nextTick(exec1)
-    process.nextTick(exec2)
-    
-print("hey")
-"""
