@@ -16,6 +16,7 @@ from .rodioprocess import *
 from .internals.debug import LogDebugger
 
 __all__ = ['EventLoop',
+           'is_within_loop',
            'get_running_loop',
            'get_current_loop']
 
@@ -95,7 +96,8 @@ class EventLoop():
     def join(self):
         if get_current_process() is self._process:
             raise RuntimeError(
-                "You just tried to merge me and myself with my `join()` method... lol, you didn't mean that")
+                "You just tried to merge me and myself with my `join()` method... lol, you didn't mean that%s"
+                % '')
         self._process.join()
 
     @corelogger.debugwrapper
@@ -228,6 +230,10 @@ class EventLoop():
 # ========================================================
 
 # Functions to get current event loop
+
+
+def is_within_loop() -> bool:
+    return bool(getattr(get_current_process(), '_eventloop', None))
 
 
 def get_current_loop(*args):
