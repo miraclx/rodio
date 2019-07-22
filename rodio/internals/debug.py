@@ -21,7 +21,9 @@ class LogDebugger:
 
     def log(self, fn, *args):
         if self.__clearedToPrint:
-            print(f'[\x1b[33mDEBUG\x1b[0m@\x1b[34m{datetime.now().strftime("%T")}\x1b[0m] [\x1b[32m{fn}\x1b[0m]%s' % (
+            idslot = f" (\x1b[36m{self.__debug_id__}\x1b[0m) " if hasArg(
+                "--DEBUG-SHOW-ID") else " "
+            print(f'[\x1b[33mDEBUG\x1b[0m@\x1b[34m{datetime.now().strftime("%T")}\x1b[0m]{idslot}[\x1b[32m{fn}\x1b[0m]%s' % (
                 f': {", ".join(map(str, args))}' if len(args) else ''))
 
     def debugwrapper(self, start=1, end=None):
