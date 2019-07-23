@@ -24,6 +24,7 @@ class EventQueue(EventEmitter):
     def __init__(self):
         super(EventQueue, self).__init__()
         self._ended = multiprocessing.Event()
+        self._started = multiprocessing.Event()
         self._paused = multiprocessing.Event()
         self._running = multiprocessing.Event()
         self._ended_or_paused = multiprocessing.Event()
@@ -111,6 +112,7 @@ class EventQueue(EventEmitter):
             self._ended_or_paused.clear()
 
     def start(self):
+        self._started.set()
         self._resume()
         asyncio.run(self._startIterator())
 
@@ -168,6 +170,9 @@ class EventQueue(EventEmitter):
 
     is_paused = paused
     has_paused = paused
+
+    def started(self):
+        return self._started.is_set()
 
     def ended(self):
         return self._ended.is_set()
