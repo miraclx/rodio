@@ -131,7 +131,7 @@ class EventLoop(EventEmitter):
     @corelogger.debugwrapper
     def _exit(self=None, code=0):
         process = check_or_get_loop(self)
-        if not get_running_loop() is process:
+        if not get_running_loop(None) is process:
             raise RuntimeError(
                 "exit() should only be called from self process")
         process.__queued_exit.clear()
@@ -142,13 +142,13 @@ class EventLoop(EventEmitter):
     @corelogger.debugwrapper
     def exit(self, code):
         process = check_or_get_loop(self)
-        if not get_running_loop() is process:
+        if not get_running_loop(None) is process:
             raise RuntimeError(
                 "exit() should only be called from self process")
         exit(code)
 
     def __raiseIfNotSelfPausable(self):
-        if get_running_loop() is self and not self.__self_pause:
+        if get_running_loop(None) is self and not self.__self_pause:
             raise RuntimeError(
                 f"can't pause the eventloop named [{self.get_name()}] from within it's process%s"
                 % '')
