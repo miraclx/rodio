@@ -118,6 +118,9 @@ class EventLoop():
     @corelogger.debugwrapper
     def exit(self=None, code=0):
         process = check_or_get_loop(self)
+        if not get_running_loop() is process:
+            raise RuntimeError(
+                "exit() should only be called from self process")
         process.__queued_exit.clear()
         process._queue.end()
         exit(code)
