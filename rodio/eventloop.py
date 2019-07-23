@@ -62,14 +62,14 @@ class EventLoop():
         else:
             exitcode = self._process.exitcode
             status.append(
-                f"stopped{f' [exitcode = {exitcode}]' if exitcode else ''}")
+                f"stopped{f' [exitcode = {exitcode}]' if isinstance(exitcode, (int, float)) else ''}")
         return '<%s(%s, %s)>' % (type(self).__name__, self._name, ", ".join(status))
 
     def _run(self):
         try:
             self._queue.start()
-        except SystemExit:
-            self.exit()
+        except SystemExit as e:
+            self.exit(self.exit(1 if not e.args else e.args[0] or 0))
 
     @corelogger.debugwrapper
     def nextTick(self, coro, *args):
