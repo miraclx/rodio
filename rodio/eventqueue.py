@@ -26,6 +26,7 @@ class EventQueue(EventEmitter):
         self._ended = multiprocessing.Event()
         self._paused = multiprocessing.Event()
         self._running = multiprocessing.Event()
+        self._ended_or_paused = multiprocessing.Event()
         self._statusLock = multiprocessing.Lock()
         self._queueMgmtLock = multiprocessing.Lock()
         self._underlayer = multiprocessing.JoinableQueue()
@@ -107,6 +108,7 @@ class EventQueue(EventEmitter):
             corelogger.log("_resume", "acquired to resume")
             self._paused.clear()
             self._running.set()
+            self._ended_or_paused.clear()
 
     def start(self):
         self._resume()
@@ -124,6 +126,7 @@ class EventQueue(EventEmitter):
             corelogger.log("_pause", "acquired to pause")
             self._paused.set()
             self._running.clear()
+            self._ended_or_paused.set()
 
     @corelogger.debugwrapper
     def pause(self):
@@ -137,6 +140,7 @@ class EventQueue(EventEmitter):
         self._ended.set()
         self._paused.clear()
         self._running.clear()
+        self._ended_or_paused.set()
 
     @corelogger.debugwrapper
     def end(self):
