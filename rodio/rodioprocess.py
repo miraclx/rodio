@@ -40,8 +40,6 @@ class RodioProcess(multiprocessing.context.Process):
         super(RodioProcess, self).start()
         self._started.set()
 
-    init = start
-
     def __preexit(self):
         if self.ended():
             raise RuntimeError("process already ended")
@@ -51,12 +49,9 @@ class RodioProcess(multiprocessing.context.Process):
             self.__killswitch()
 
     @corelogger.debugwrapper
-    def stop(self):
+    def terminate(self):
         self.__preexit()
         os.kill(self.pid, signal.SIGTERM)
-
-    end = stop
-    terminate = stop
 
     @corelogger.debugwrapper
     def kill(self):
