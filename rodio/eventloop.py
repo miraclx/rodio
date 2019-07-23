@@ -151,19 +151,29 @@ class EventLoop():
     def resume_process(self):
         self._process.resume()
 
-    @corelogger.debugwrapper
-    def schedulePause(self):
-        if self.ended():
-            raise RuntimeError(
-                "can't queue a queue pause on an ended process")
-        self._queue.push(EventLoop.pause)
+    def scheduler(self, method, *, name=None, fn=None, fns=[], end_message=None, exec_checks=[]):
+        fns.append(fn) if fn else None
+        @corelogger.debugwrapper(name)
+        def deployed_fn(self, *args, **kwargs):
+            if self.ended():
+                raise RuntimeError(
+                    end_message or f"can't execute {name or 'scheduled method'} on an ended process")
+            for slot in exec_checks:
+                if slot[0](self):
+                    raise slot[1]
+            [fn(self, *args, **kwargs) for fn in fns]
+            self._queue.push(method)
+        deployed_fn.__name__ = deployed_fn.__name__.replace(
+            deployed_fn.__name__, name)
+        deployed_fn.__qualname__ = deployed_fn.__qualname__.replace(
+            deployed_fn.__name__, name)
+        return deployed_fn
 
-    @corelogger.debugwrapper
-    def scheduleProcessPause(self):
-        if self.ended():
-            raise RuntimeError(
-                "can't queue a process pause on an ended process")
-        self._queue.push(EventLoop.pause_process)
+    schedulePause = scheduler(None, pause, name='schedulePause',
+                              end_message="can't queue a queue pause on an ended process")
+
+    scheduleProcessPause = scheduler(None, pause_process, name='scheduleProcessPause',
+                                     end_message="can't queue a process pause on an ended process")
 
     @corelogger.debugwrapper
     def scheduleStop(self):
