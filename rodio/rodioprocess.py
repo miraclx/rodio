@@ -143,6 +143,9 @@ class RodioProcess(multiprocessing.context.Process, EventEmitter):
 
     has_ended = ended
 
+    def is_zombie(self):
+        return self.is_alive() and self.ended()
+
     def paused(self):
         return self._paused.is_set()
 
