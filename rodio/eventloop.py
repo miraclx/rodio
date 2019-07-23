@@ -176,7 +176,7 @@ class EventLoop(EventEmitter):
         self.emit('resumeprocess')
         self._process.resume()
 
-    def scheduler(self, method, *, name=None, fn=None, fns=[], end_message=None, exec_checks=[]):
+    def scheduler(self, method, *, name=None, fn=None, fns=[], event=None, end_message=None, exec_checks=[]):
         fns.append(fn) if fn else None
         @corelogger.debugwrapper(name)
         def deployed_fn(self, *args, **kwargs):
@@ -187,6 +187,7 @@ class EventLoop(EventEmitter):
                 if slot[0](self):
                     raise slot[1]
             [fn(self, *args, **kwargs) for fn in fns]
+            self.emit(event) if event else None
             self._queue.push(method)
         deployed_fn.__name__ = deployed_fn.__name__.replace(
             deployed_fn.__name__, name)
