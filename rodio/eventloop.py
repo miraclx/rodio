@@ -66,7 +66,10 @@ class EventLoop():
         return '<%s(%s, %s)>' % (type(self).__name__, self._name, ", ".join(status))
 
     def _run(self):
-        self._queue.start()
+        try:
+            self._queue.start()
+        except SystemExit:
+            self.exit()
 
     @corelogger.debugwrapper
     def nextTick(self, coro, *args):
@@ -111,6 +114,13 @@ class EventLoop():
         process = check_or_get_loop(self)
         process.__queued_exit.clear()
         process._process.terminate()
+
+    @corelogger.debugwrapper
+    def exit(self=None, code=0):
+        process = check_or_get_loop(self)
+        process.__queued_exit.clear()
+        process._queue.end()
+        exit(code)
 
     def __raiseIfNotSelfPausable(self):
         if get_running_loop() is self and not self.__self_pause:
