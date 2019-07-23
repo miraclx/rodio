@@ -46,8 +46,8 @@ class EventLoop(EventEmitter):
         self._queue = EventQueue()
         self._process = RodioProcess(target=self._run,
                                      name=self._name,
-                                     daemon=daemon,
-                                     killswitch=self._onend)
+                                     daemon=daemon)
+        self._process.on('beforeExit', self._onend)
         setattr(self._process, '_eventloop', self)
         super(EventLoop, self).__init__()
 

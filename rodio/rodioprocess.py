@@ -24,14 +24,12 @@ class RodioProcess(multiprocessing.context.Process, EventEmitter):
     _paused = _started = __killswitch = None
 
     @corelogger.debugwrapper
-    def __init__(self, target, *, name=None, args=(), kwargs=None, daemon=None, killswitch=None):
+    def __init__(self, target, *, name=None, args=(), kwargs=None, daemon=None):
         super(RodioProcess, self).__init__(target=target,
                                            args=args or (),
                                            kwargs=kwargs or {},
                                            daemon=daemon)
         EventEmitter.__init__(self)
-
-        self.__killswitch = killswitch
 
         self._started = multiprocessing.Event()
         self._paused = multiprocessing.Event()
@@ -49,8 +47,8 @@ class RodioProcess(multiprocessing.context.Process, EventEmitter):
             raise RuntimeError("process already ended")
         if not self.started():
             raise RuntimeError("can't end a process before it starts")
-        if self.__killswitch:
-            self.__killswitch()
+        self.emit('beforeExit')
+        
 
     @corelogger.debugwrapper
     def terminate(self):
