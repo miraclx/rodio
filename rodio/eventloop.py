@@ -14,6 +14,7 @@ from .eventqueue import *
 from .rodiothread import *
 from .rodioprocess import *
 from .internals.debug import LogDebugger
+from node_events import EventEmitter
 
 __all__ = ['EventLoop',
            'is_within_loop',
@@ -31,7 +32,7 @@ class LoopModuleStruct:
         self.is_loaded = multiprocessing.Event()
 
 
-class EventLoop():
+class EventLoop(EventEmitter):
     _name = _queue = _process = __block = __autostarted = __queued_exit = None
 
     @corelogger.debugwrapper
@@ -46,8 +47,9 @@ class EventLoop():
         self._process = RodioProcess(target=self._run,
                                      name=self._name,
                                      daemon=daemon,
-                                     killswitch=self._queue.end)
+                                     killswitch=self._onend)
         setattr(self._process, '_eventloop', self)
+        super(EventLoop, self).__init__()
 
     def __repr__(self):
         status = []
@@ -70,6 +72,10 @@ class EventLoop():
             self._queue.start()
         except SystemExit as e:
             self.exit(self.exit(1 if not e.args else e.args[0] or 0))
+
+    def _onend(self):
+        self.emit('beforeExit')
+        self._queue.end()
 
     @corelogger.debugwrapper
     def nextTick(self, coro, *args):
@@ -122,7 +128,8 @@ class EventLoop():
             raise RuntimeError(
                 "exit() should only be called from self process")
         process.__queued_exit.clear()
-        process._queue.end()
+        self._onend()
+        self.emit('exit')
         exit(code)
 
     def __raiseIfNotSelfPausable(self):

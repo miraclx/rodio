@@ -10,6 +10,7 @@ import os
 import signal
 import multiprocessing
 from .internals.debug import LogDebugger
+from node_events import EventEmitter
 
 __all__ = ['RodioProcess',
            'get_running_process',
@@ -19,7 +20,7 @@ __all__ = ['RodioProcess',
 corelogger = LogDebugger("rodiocore.rodioprocess")
 
 
-class RodioProcess(multiprocessing.context.Process):
+class RodioProcess(multiprocessing.context.Process, EventEmitter):
     _paused = _started = __killswitch = None
 
     @corelogger.debugwrapper
@@ -28,6 +29,7 @@ class RodioProcess(multiprocessing.context.Process):
                                            args=args or (),
                                            kwargs=kwargs or {},
                                            daemon=daemon)
+        EventEmitter.__init__(self)
 
         self.__killswitch = killswitch
 
@@ -35,12 +37,14 @@ class RodioProcess(multiprocessing.context.Process):
         self._paused = multiprocessing.Event()
         self.set_name(name or self.name)
 
+        self.on('exit', self.__pre_exit)
+
     @corelogger.debugwrapper
     def start(self):
         super(RodioProcess, self).start()
         self._started.set()
 
-    def __preexit(self):
+    def __pre_exit(self):
         if self.ended():
             raise RuntimeError("process already ended")
         if not self.started():
@@ -50,12 +54,12 @@ class RodioProcess(multiprocessing.context.Process):
 
     @corelogger.debugwrapper
     def terminate(self):
-        self.__preexit()
+        self.emit('exit')
         os.kill(self.pid, signal.SIGTERM)
 
     @corelogger.debugwrapper
     def kill(self):
-        self.__preexit()
+        self.emit('exit')
         os.kill(self.pid, signal.SIGKILL)
 
     def __pause(self, action, code):
