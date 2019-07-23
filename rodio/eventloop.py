@@ -29,6 +29,7 @@ class LoopModuleStruct:
         self.path = path
         self.loader = importlib.machinery.SourceFileLoader(
             loop.get_name(), path)
+        self.status = EventEmitter()
         self.is_loaded = multiprocessing.Event()
 
 
@@ -235,7 +236,7 @@ class EventLoop(EventEmitter):
                              ])
 
     @corelogger.debugwrapper
-    def load_module(self, path: str, *, block=True):
+    def load_module(self, path: str, *, block=False):
         if not EventLoop.is_eventloop(self):
             raise TypeError("loop argument must be a valid EventLoop object")
         if self.ended():
@@ -253,10 +254,16 @@ class EventLoop(EventEmitter):
             struct.loader.load_module()
             struct.is_loaded.set()
         self.nextTick(import_decoy)
-        if not block:
-            return struct.is_loaded
-        struct.is_loaded.wait()
-        self._queue._ended_or_paused.wait()
+        thandle = threading.Thread(target=lambda: (
+            struct.is_loaded.wait(),
+            struct.status.emit('loaded'),
+            self._queue._ended_or_paused.wait(),
+            struct.status.emit('complete', self)
+        ))
+        thandle.start()
+        if block:
+            thandle.join()
+        return struct.status
 
     def set_name(self, name):
         if not (name and isinstance(name, str)):
