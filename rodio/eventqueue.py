@@ -33,6 +33,16 @@ class EventQueue(EventEmitter):
         self._underlayer = multiprocessing.JoinableQueue()
         self._pause()
 
+    def __repr__(self):
+        status = []
+        if self.started():
+            status.append("started")
+        status.append("ended" if self.ended()
+                      else "paused" if self.paused() else "running")
+        status.append(f"[unfinished = {self._underlayer.qsize()}]" if self._underlayer.qsize(
+        ) else "[complete]" if self.ended() else "[empty]")
+        return '<%s(%s)>' % (type(self).__name__, ", ".join(status))
+
     @corelogger.debugwrapper
     def push(self, coro, args=()):
         if self.ended():

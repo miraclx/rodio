@@ -36,7 +36,23 @@ class RodioProcess(multiprocessing.context.Process, EventEmitter):
         self._ended = multiprocessing.Event()
         self.set_name(name or self.name)
 
-
+    def __repr__(self):
+        status = []
+        if self.started():
+            status.append("started")
+        if self.is_zombie():
+            status.append("zombie")
+        else:
+            if self.is_alive():
+                status.append("alive")
+            if self.paused():
+                status.append("paused")
+            else:
+                exitcode = self.exitcode
+                status.append(
+                    f"stopped{f' [exitcode = {exitcode}]' if isinstance(exitcode, (int, float)) else ''}")
+        status.append("daemon") if self.is_daemon() else None
+        return '<%s(%s, %s)>' % (type(self).__name__, self._name, ", ".join(status))
 
     @corelogger.debugwrapper
     def start(self):
