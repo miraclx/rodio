@@ -175,17 +175,38 @@ class EventLoop():
     scheduleProcessPause = scheduler(None, pause_process, name='scheduleProcessPause',
                                      end_message="can't queue a process pause on an ended process")
 
-    @corelogger.debugwrapper
-    def scheduleStop(self):
-        if self.ended():
-            raise RuntimeError(
-                "can't queue a process stop on an ended process")
-        if self.end_is_queued():
-            raise RuntimeError(
-                "this process is already scheduled to stop")
+    scheduleExit = scheduler(None, exit,
+                             name='scheduleExit',
+                             fn=lambda self: self.__queued_exit.set(),
+                             exec_checks=[
+                                 [
+                                     lambda self: self.end_is_queued(),
+                                     RuntimeError(
+                                         "this process is already scheduled to stop")
+                                 ]
+                             ])
 
-        self.__queued_exit.set()
-        self._queue.push(EventLoop.stop)
+    scheduleTERM = scheduler(None, terminate,
+                             name='scheduleTERM',
+                             fn=lambda self: self.__queued_exit.set(),
+                             exec_checks=[
+                                 [
+                                     lambda self: self.end_is_queued(),
+                                     RuntimeError(
+                                         "this process is already scheduled to stop")
+                                 ]
+                             ])
+
+    scheduleKILL = scheduler(None, kill,
+                             name='scheduleKILL',
+                             fn=lambda self: self.__queued_exit.set(),
+                             exec_checks=[
+                                 [
+                                     lambda self: self.end_is_queued(),
+                                     RuntimeError(
+                                         "this process is already scheduled to stop")
+                                 ]
+                             ])
 
     @corelogger.debugwrapper
     def load_module(self, path: str, *, block=True):
