@@ -101,6 +101,12 @@ class EventLoop():
         self._process.join()
 
     @corelogger.debugwrapper
+    def kill(self=None):
+        process = check_or_get_loop(self)
+        process.__queued_exit.clear()
+        process._process.kill()
+
+    @corelogger.debugwrapper
     def terminate(self=None):
         process = check_or_get_loop(self)
         process.__queued_exit.clear()
@@ -114,13 +120,13 @@ class EventLoop():
 
     @corelogger.debugwrapper
     def pause(self=None):
-        process = self or get_running_loop()
+        process = check_or_get_loop(self)
         process.__raiseIfNotSelfPausable()
         process._queue.pause()
 
     @corelogger.debugwrapper
     def pause_process(self=None):
-        process = self or get_running_loop()
+        process = check_or_get_loop(self)
         process.__raiseIfNotSelfPausable()
         process._process.pause()
 
