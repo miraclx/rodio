@@ -249,4 +249,13 @@ def get_current_loop(*args):
 
 get_running_loop = get_current_loop
 
+
+def check_or_get_loop(input=None):
+    ret = input or get_running_loop(None)
+    if isinstance(ret, EventLoop):
+        return ret
+    if input:
+        raise TypeError("input argument, if defined must be EventLoop")
+    raise RuntimeError("no event loop is defined or running")
+
 # ========================================================
