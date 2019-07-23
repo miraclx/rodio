@@ -101,13 +101,10 @@ class EventLoop():
         self._process.join()
 
     @corelogger.debugwrapper
-    def stop(self=None):
-        process = self or get_running_loop()
+    def terminate(self=None):
+        process = check_or_get_loop(self)
         process.__queued_exit.clear()
-        process._process.stop()
-
-    end = stop
-    terminate = stop
+        process._process.terminate()
 
     def __raiseIfNotSelfPausable(self):
         if get_running_loop() is self and not self.__self_pause:
