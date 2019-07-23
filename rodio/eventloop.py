@@ -195,14 +195,14 @@ class EventLoop(EventEmitter):
             deployed_fn.__name__, name)
         return deployed_fn
 
-    schedulePause = scheduler(None, pause, name='schedulePause',
+    schedulePause = scheduler(None, pause, name='schedulePause', event='schedulePause',
                               end_message="can't queue a queue pause on an ended process")
 
-    scheduleProcessPause = scheduler(None, pause_process, name='scheduleProcessPause',
+    scheduleProcessPause = scheduler(None, pause_process, name='scheduleProcessPause', event='scheduleProcessPause',
                                      end_message="can't queue a process pause on an ended process")
 
     scheduleExit = scheduler(None, exit,
-                             name='scheduleExit',
+                             name='scheduleExit', event='scheduleExit',
                              fn=lambda self: self.__queued_exit.set(),
                              exec_checks=[
                                  [
@@ -213,7 +213,7 @@ class EventLoop(EventEmitter):
                              ])
 
     scheduleTERM = scheduler(None, terminate,
-                             name='scheduleTERM',
+                             name='scheduleTERM', event='scheduleTERM',
                              fn=lambda self: self.__queued_exit.set(),
                              exec_checks=[
                                  [
@@ -224,7 +224,7 @@ class EventLoop(EventEmitter):
                              ])
 
     scheduleKILL = scheduler(None, kill,
-                             name='scheduleKILL',
+                             name='scheduleKILL', event='scheduleKILL',
                              fn=lambda self: self.__queued_exit.set(),
                              exec_checks=[
                                  [
