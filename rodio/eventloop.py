@@ -62,7 +62,7 @@ class EventLoop():
         else:
             exitcode = self._process.exitcode
             status.append(
-                f"stopped {f'[exitcode = {exitcode}]' if exitcode else ''}")
+                f"stopped{f' [exitcode = {exitcode}]' if exitcode else ''}")
         return '<%s(%s, %s)>' % (type(self).__name__, self._name, ", ".join(status))
 
     def _run(self):
