@@ -36,7 +36,7 @@ class RodioProcess(multiprocessing.context.Process, EventEmitter):
         self._ended = multiprocessing.Event()
         self.set_name(name or self.name)
 
-        self.on('exit', self.__pre_exit)
+
 
     @corelogger.debugwrapper
     def start(self):
