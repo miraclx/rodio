@@ -71,7 +71,7 @@ class EventLoop(EventEmitter):
         try:
             self._queue.start()
         except SystemExit as e:
-            self.exit(self.exit(1 if not e.args else e.args[0] or 0))
+            self._exit(1 if not e.args else e.args[0] or 0)
 
     def _onend(self):
         self.emit('beforeExit')
@@ -122,14 +122,22 @@ class EventLoop(EventEmitter):
         process._process.terminate()
 
     @corelogger.debugwrapper
-    def exit(self=None, code=0):
+    def _exit(self=None, code=0):
         process = check_or_get_loop(self)
         if not get_running_loop() is process:
             raise RuntimeError(
                 "exit() should only be called from self process")
         process.__queued_exit.clear()
-        self._onend()
+        process._process._pre_exit()
         self.emit('exit')
+        exit(code)
+
+    @corelogger.debugwrapper
+    def exit(self, code):
+        process = check_or_get_loop(self)
+        if not get_running_loop() is process:
+            raise RuntimeError(
+                "exit() should only be called from self process")
         exit(code)
 
     def __raiseIfNotSelfPausable(self):
