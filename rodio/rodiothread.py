@@ -8,6 +8,7 @@ Efficient non-blocking event loops for async concurrency and I/O
 
 import threading
 from .internals.debug import LogDebugger
+from node_events import EventEmitter
 
 __all__ = ['RodioThread',
            'get_running_thread',
@@ -16,29 +17,33 @@ __all__ = ['RodioThread',
 corelogger = LogDebugger("rodiocore.rodiothread")
 
 
-class RodioThread(threading.Thread):
+class RodioThread(threading.Thread, EventEmitter):
     @corelogger.debugwrapper
     def __init__(self, target, *, name=None, args=(), kwargs=None, daemon=None, killswitch=None):
         super(RodioThread, self).__init__(target=target,
                                           args=args or (),
                                           kwargs=kwargs or {},
                                           daemon=daemon)
-
+        EventEmitter.__init__(self)
         self.__killswitch = killswitch
 
         self._ended = threading.Event()
         self.set_name(name or self.name)
 
     @corelogger.debugwrapper
+    def start(self):
+        super(RodioThread, self).start()
+        self.emit('start')
+
+    @corelogger.debugwrapper
     def stop(self):
         if self.ended():
             raise RuntimeError("process already ended")
+        self.emit('beforeExit')
         if self.__killswitch:
             self.__killswitch()
         self._ended.set()
-
-    end = stop
-    terminate = stop
+        self.emit('exit')
 
     @corelogger.debugwrapper
     def set_name(self, name):

@@ -51,6 +51,7 @@ class EventQueue(EventEmitter):
         with self._queueMgmtLock:
             corelogger.log("push", "acquired to push")
             corelogger.log("push pre  put len", self._underlayer.qsize())
+            self.emit('push', [stack, args])
             self._underlayer.put([stack, args, typeid])
             corelogger.log("push post put len", self._underlayer.qsize())
             corelogger.log("push", "strict resume")
@@ -71,6 +72,7 @@ class EventQueue(EventEmitter):
                         corelogger.log("__stripCoros pre  get len",
                                        self._underlayer.qsize())
                         block = self._underlayer.get()
+                        self.emit('get', block[:2])
                         corelogger.log("__stripCoros post get len",
                                        self._underlayer.qsize())
                         self._underlayer.task_done()
@@ -113,6 +115,7 @@ class EventQueue(EventEmitter):
 
     def start(self):
         self._started.set()
+        self.emit('start')
         self._resume()
         asyncio.run(self._startIterator())
 

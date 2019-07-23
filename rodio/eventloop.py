@@ -84,8 +84,10 @@ class EventLoop(EventEmitter):
         if self.end_is_queued():
             raise RuntimeError(
                 "Can't enqueue items to a process thats scheduled to stop")
+        self.emit('nextTick', [coro, args])
         self._queue.push(coro, args)
         if self.__autostart and not self.started():
+            self.emit('autostart')
             self.start()
             self.__autostarted = True
 
@@ -97,6 +99,7 @@ class EventLoop(EventEmitter):
         if self.started():
             raise RuntimeError("EventLoop has been previously started. They can only be started once%s"
                                % '')
+        self.emit('start')
         self._process.start()
         if self.__block:
             self.join()
@@ -107,18 +110,21 @@ class EventLoop(EventEmitter):
             raise RuntimeError(
                 "You just tried to merge me and myself with my `join()` method... lol, you didn't mean that%s"
                 % '')
+        self.emit('join')
         self._process.join()
 
     @corelogger.debugwrapper
     def kill(self=None):
         process = check_or_get_loop(self)
         process.__queued_exit.clear()
+        self.emit('kill')
         process._process.kill()
 
     @corelogger.debugwrapper
     def terminate(self=None):
         process = check_or_get_loop(self)
         process.__queued_exit.clear()
+        self.emit('terminate')
         process._process.terminate()
 
     @corelogger.debugwrapper
@@ -150,20 +156,24 @@ class EventLoop(EventEmitter):
     def pause(self=None):
         process = check_or_get_loop(self)
         process.__raiseIfNotSelfPausable()
+        self.emit('pause')
         process._queue.pause()
 
     @corelogger.debugwrapper
     def pause_process(self=None):
         process = check_or_get_loop(self)
         process.__raiseIfNotSelfPausable()
+        self.emit('processpause')
         process._process.pause()
 
     @corelogger.debugwrapper
     def resume(self):
+        self.emit('resume')
         self._queue.resume()
 
     @corelogger.debugwrapper
     def resume_process(self):
+        self.emit('resumeprocess')
         self._process.resume()
 
     def scheduler(self, method, *, name=None, fn=None, fns=[], end_message=None, exec_checks=[]):

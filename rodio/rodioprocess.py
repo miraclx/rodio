@@ -42,6 +42,7 @@ class RodioProcess(multiprocessing.context.Process, EventEmitter):
     def start(self):
         super(RodioProcess, self).start()
         self._started.set()
+        self.emit('start')
 
     def _pre_exit(self):
         if self.ended():
@@ -49,7 +50,6 @@ class RodioProcess(multiprocessing.context.Process, EventEmitter):
         if not self.started():
             raise RuntimeError("can't end a process before it starts")
         self.emit('beforeExit')
-        
         self._paused.clear()
 
     def __pre_exit(self):
@@ -74,6 +74,7 @@ class RodioProcess(multiprocessing.context.Process, EventEmitter):
             raise RuntimeError("can't pause ended process")
         if not self.paused():
             self._paused.set()
+            self.emit('pause', action)
             if self.pid:
                 os.kill(self.pid, code)
             else:
@@ -96,6 +97,7 @@ class RodioProcess(multiprocessing.context.Process, EventEmitter):
                 "unstarted process can't be resumed because it couldn't be paused")
         if self.paused():
             self._paused.clear()
+            self.emit('resume')
             os.kill(self.pid, signal.SIGCONT)
         else:
             raise RuntimeError("process not paused")
