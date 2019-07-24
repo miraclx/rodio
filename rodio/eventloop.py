@@ -286,7 +286,7 @@ class EventLoop(EventEmitter):
         return self._process.is_active() and not self._queue.ended()
 
     def ended(self):
-        return self._process.ended() and self._queue.ended()
+        return self._process.ended() or self._queue.ended()
 
     def end_is_queued(self):
         return self.__queued_exit.is_set()
