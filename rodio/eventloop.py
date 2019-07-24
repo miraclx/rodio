@@ -33,7 +33,12 @@ class LoopModuleStruct(EventEmitter):
             loop.get_name(), path)
         self.is_loaded = multiprocessing.Event()
 
-    def init(self, block=False, event_queue=[]):
+    def init(self):
+        self.loop._queue.once('end', self.is_loaded.set)
+        self.loader.load_module()
+        self.is_loaded.set()
+
+    def wait(self, block=False, event_queue=[]):
         def target():
             self.is_loaded.wait()
             self.emit('loaded')
