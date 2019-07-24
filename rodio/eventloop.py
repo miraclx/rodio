@@ -56,8 +56,8 @@ class EventLoop(EventEmitter):
         status = []
         if self.started():
             status.append("started")
-        if self.is_alive():
-            status.append("alive")
+        if self.is_active():
+            status.append("active")
         if not self.ended():
             status.append("paused" if self.paused() else "running")
         elif self.end_is_queued():
@@ -282,8 +282,8 @@ class EventLoop(EventEmitter):
     def started(self):
         return self._process.started()
 
-    def is_alive(self):
-        return self._process.is_alive()
+    def is_active(self):
+        return self._process.is_active() and not self._queue.ended()
 
     def ended(self):
         return self._process.ended() and self._queue.ended()
