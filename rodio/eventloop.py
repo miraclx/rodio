@@ -24,13 +24,27 @@ __all__ = ['EventLoop',
 corelogger = LogDebugger("rodiocore.eventloop")
 
 
-class LoopModuleStruct:
+class LoopModuleStruct(EventEmitter):
     def __init__(self, loop, path):
+        super(LoopModuleStruct, self).__init__()
         self.path = path
+        self.loop = loop
         self.loader = importlib.machinery.SourceFileLoader(
             loop.get_name(), path)
-        self.status = EventEmitter()
         self.is_loaded = multiprocessing.Event()
+
+    def init(self, block=False, event_queue=[]):
+        def target():
+            self.is_loaded.wait()
+            self.emit('loaded')
+            for [eventname, ret, raw_event] in event_queue:
+                raw_event.wait()
+                self.emit(eventname, ret)
+
+        thandle = threading.Thread(target=target)
+        thandle.start()
+        thandle.join() if block else None
+        return self
 
 
 class EventLoop(EventEmitter):
@@ -254,16 +268,9 @@ class EventLoop(EventEmitter):
             struct.loader.load_module()
             struct.is_loaded.set()
         self.nextTick(import_decoy)
-        thandle = threading.Thread(target=lambda: (
-            struct.is_loaded.wait(),
-            struct.status.emit('loaded'),
-            self._queue._ended_or_paused.wait(),
-            struct.status.emit('complete', self)
-        ))
-        thandle.start()
-        if block:
-            thandle.join()
-        return struct.status
+        return struct.init(block=block, event_queue=[
+            ['complete', self, self._queue._ended_or_paused]
+        ])
 
     def set_name(self, name):
         if not (name and isinstance(name, str)):
