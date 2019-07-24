@@ -267,13 +267,10 @@ class EventLoop(EventEmitter):
         self._module_stack = struct
 
         def import_decoy():
-            loop = get_running_loop()
-            struct = loop._module_stack
-            loop._queue.once('end', struct.is_loaded.set)
-            struct.loader.load_module()
-            struct.is_loaded.set()
+            get_running_loop()._module_stack.init()
+
         self.nextTick(import_decoy)
-        return struct.init(block=block, event_queue=[
+        return struct.wait(block=block, event_queue=[
             ['complete', self, self._queue._ended_or_paused]
         ])
 
