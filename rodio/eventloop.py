@@ -140,7 +140,7 @@ class EventLoop(EventEmitter):
         exit(code)
 
     @corelogger.debugwrapper
-    def exit(self, code):
+    def exit(self=None, code=0):
         process = check_or_get_loop(self)
         if not get_running_loop(None) is process:
             raise RuntimeError(
