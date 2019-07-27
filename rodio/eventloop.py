@@ -62,6 +62,7 @@ class EventLoop(EventEmitter):
         self.__autostart = autostart
         self.__self_pause = self_pause
         self.__queued_exit = threading.Event()
+        self._is_directly_nested = is_within_loop()
 
         self._queue = EventQueue()
         self._process = RodioProcess(target=self._run,
