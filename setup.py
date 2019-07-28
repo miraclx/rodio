@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="rodio",
-    version="0.8.0",
+    version="1.0.0",
     author="Miraculous Owonubi",
     author_email="omiraculous@gmail.com",
     description="Efficient non-blocking event loops for async concurrency and I/O",
