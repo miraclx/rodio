@@ -19,7 +19,9 @@ from node_events import EventEmitter
 __all__ = ['EventLoop',
            'is_within_loop',
            'get_running_loop',
-           'get_current_loop']
+           'get_current_loop',
+           'check_or_get_loop',
+           'is_actively_within_module']
 
 corelogger = LogDebugger("rodiocore.eventloop")
 
@@ -324,10 +326,6 @@ class EventLoop(EventEmitter):
 # Functions to get current event loop
 
 
-def is_within_loop() -> bool:
-    return bool(getattr(get_current_process(), '_eventloop', None))
-
-
 def get_current_loop(*args):
     loop: EventLoop = getattr(get_current_process(),
                               '_eventloop', *args or (None,))
@@ -340,6 +338,10 @@ def get_current_loop(*args):
 get_running_loop = get_current_loop
 
 
+def is_within_loop() -> bool:
+    return bool(get_running_loop(None))
+
+
 def check_or_get_loop(input=None):
     ret = input or get_running_loop(None)
     if isinstance(ret, EventLoop):
@@ -347,5 +349,21 @@ def check_or_get_loop(input=None):
     if input:
         raise TypeError("input argument, if defined must be EventLoop")
     raise RuntimeError("no event loop is defined or running")
+
+
+def is_actively_within_module(rt_val=None) -> bool:
+    try:
+        if not is_within_loop():
+            raise RuntimeError("no actively running EventLoop detected")
+        ret = bool(getattr(get_running_loop(), '_module_stack', None))
+        if not ret and rt_val:
+            raise RuntimeError(
+                "active EventLoop has not been attached a module")
+        else:
+            return ret
+    except RuntimeError:
+        if rt_val:
+            raise
+        return rt_val
 
 # ========================================================
