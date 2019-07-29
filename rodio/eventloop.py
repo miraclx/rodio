@@ -212,9 +212,9 @@ class EventLoop(EventEmitter):
             [fn(self, *args, **kwargs) for fn in fns]
             self.emit(event) if event else None
             self._queue.push(method)
-        deployed_fn.__name__ = deployed_fn.__name__.replace(
-            deployed_fn.__name__, name)
         deployed_fn.__qualname__ = deployed_fn.__qualname__.replace(
+            'scheduler.<locals>.deployed_fn', name)
+        deployed_fn.__name__ = deployed_fn.__name__.replace(
             deployed_fn.__name__, name)
         return deployed_fn
 

@@ -47,6 +47,8 @@ class LogDebugger:
                 ret = fn(*args, **kwargs)
                 self.log(f'{xfn_name}() exit')
                 return ret
+            underlayer.__name__ = fn.__name__
+            underlayer.__qualname__ = fn.__qualname__
             return underlayer
         if callable(start):
             [start, fn] = [1, start]
