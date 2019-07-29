@@ -3,6 +3,15 @@ import rodio
 from datetime import datetime
 
 
+"""
+CLi Arguments
+--DEBUG: Show Debug Information
+--DEBUG=<id>: Show Specific Debug Information
+--DEBUG-SHOW-ID: Show debugger id when printing
+--DEBUG-SHOW-PROCESS: Show Current Process Name at the Time of log
+"""
+
+
 def hasArg(*args):
     return any(any(v.strip().endswith(x) for x in args) for v in sys.argv)
 
