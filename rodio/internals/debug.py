@@ -1,4 +1,5 @@
 import sys
+import rodio
 from datetime import datetime
 
 
@@ -15,6 +16,8 @@ class LogDebugger:
             raise ValueError(
                 "The identifier for the debugger already exists within the stack")
         self.__debug_id__ = identifier
+        self.__printer = rodio.printfromprocess if hasArg(
+            '--DEBUG-SHOW-PROCESS') else print
         self.__clearedToPrint = hasArg(
             '--DEBUG', *(f'--DEBUG={identifier}',) if identifier else ())
         debugLoggers[identifier] = self
@@ -23,7 +26,7 @@ class LogDebugger:
         if self.__clearedToPrint:
             idslot = f" (\x1b[36m{self.__debug_id__}\x1b[0m) " if hasArg(
                 "--DEBUG-SHOW-ID") else " "
-            print(f'[\x1b[33mDEBUG\x1b[0m@\x1b[34m{datetime.now().strftime("%T")}\x1b[0m]{idslot}[\x1b[32m{fn}\x1b[0m]%s' % (
+            self.__printer(f'[\x1b[33mDEBUG\x1b[0m@\x1b[34m{datetime.now().strftime("%T")}\x1b[0m]{idslot}[\x1b[32m{fn}\x1b[0m]%s' % (
                 f': {", ".join(map(str, args))}' if len(args) else ''))
 
     def debugwrapper(self, start=1, end=None, fn_name=None):
