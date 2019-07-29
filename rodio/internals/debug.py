@@ -32,8 +32,9 @@ class LogDebugger:
 
             def underlayer(*args, **kwargs):
                 self.log(f'{xfn_name}() init', *args[start:end])
-                fn(*args, **kwargs)
+                ret = fn(*args, **kwargs)
                 self.log(f'{xfn_name}() exit')
+                return ret
             return underlayer
         if callable(start):
             [start, fn] = [1, start]
