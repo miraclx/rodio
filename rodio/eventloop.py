@@ -58,7 +58,7 @@ class EventLoop(EventEmitter):
     _name = _queue = _process = __block = __autostarted = __queued_exit = None
 
     @corelogger.debugwrapper
-    def __init__(self, name=None, *, autostart=True, block=False, daemon=False, self_pause=True):
+    def __init__(self, name: str = None, *, autostart=True, block=False, daemon=False, shared_queue=True, self_pause=True):
         self._name = name or 'RodioEventLoop'
         self.__block = block
         self.__autostart = autostart
@@ -66,7 +66,7 @@ class EventLoop(EventEmitter):
         self.__queued_exit = threading.Event()
         self._is_directly_nested = is_within_loop()
 
-        self._queue = EventQueue()
+        self._queue = EventQueue(shared_queue=shared_queue)
         self._process = RodioProcess(target=self._run,
                                      name=self._name,
                                      daemon=daemon)

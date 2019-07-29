@@ -21,8 +21,9 @@ corelogger = LogDebugger("rodiocore.eventqueue")
 class EventQueue(EventEmitter):
 
     @corelogger.debugwrapper
-    def __init__(self):
+    def __init__(self, shared_queue=True):
         super(EventQueue, self).__init__()
+        self.__shared_queue = bool(shared_queue)
         self._ended = multiprocessing.Event()
         self._started = multiprocessing.Event()
         self._paused = multiprocessing.Event()
@@ -30,7 +31,8 @@ class EventQueue(EventEmitter):
         self._ended_or_paused = multiprocessing.Event()
         self._statusLock = multiprocessing.Lock()
         self._queueMgmtLock = multiprocessing.Lock()
-        self._underlayer = multiprocessing.JoinableQueue()
+        self._underlayer = queue.Queue(
+        ) if not shared_queue else multiprocessing.JoinableQueue()
         self._pause()
 
     def __repr__(self):
@@ -39,6 +41,7 @@ class EventQueue(EventEmitter):
             status.append("started")
         status.append("ended" if self.ended()
                       else "paused" if self.paused() else "running")
+        status.append(f"{'' if self.is_shared() else 'un'}shared")
         status.append(f"[unfinished = {self._underlayer.qsize()}]" if self._underlayer.qsize(
         ) else "[complete]" if self.ended() else "[empty]")
         return '<%s(%s)>' % (type(self).__name__, ", ".join(status))
@@ -55,7 +58,8 @@ class EventQueue(EventEmitter):
                 f"{notpassed} item{' defined must' if len(notpassed) == 1 else 's defined must all'} either be a coroutine function or a callable object")
         [stack, typeid] = self.__checkAll(asyncio.iscoroutinefunction, stack, [stack, 1]) or \
             self.__checkAll(callable, stack, [stack, 0])
-        stack = dill.dumps(stack)
+        if self.__shared_queue:
+            stack = dill.dumps(stack)
 
         corelogger.log("push", "acquiring to push...")
         with self._queueMgmtLock:
@@ -106,7 +110,8 @@ class EventQueue(EventEmitter):
     async def _startIterator(self):
         corelogger.log('async __startIterator init')
         for [stack, args, typeid] in self.__stripCoros():
-            stack = dill.loads(stack)
+            if self.__shared_queue:
+                stack = dill.loads(stack)
             if typeid == 0:
                 [fn(*args) for fn in stack]
             elif typeid == 1:
@@ -189,6 +194,9 @@ class EventQueue(EventEmitter):
 
     def ended(self):
         return self._ended.is_set()
+
+    def is_shared(self):
+        return self.__shared_queue
 
     is_ended = ended
     has_ended = ended
