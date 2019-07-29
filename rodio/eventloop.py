@@ -100,8 +100,7 @@ class EventLoop(EventEmitter):
         self.emit('beforeExit')
         self._queue.end()
 
-    @corelogger.debugwrapper
-    def nextTick(self, coro, *args):
+    def __nextTick(self, coro, args):
         if self.ended():
             raise RuntimeError("Can't enqueue items to the ended process")
         if self.end_is_queued():
@@ -113,6 +112,13 @@ class EventLoop(EventEmitter):
             self.emit('autostart')
             self.start()
             self.__autostarted = True
+
+    @corelogger.debugwrapper
+    def nextTick(self, coro, *args):
+        if self.end_is_queued():
+            raise RuntimeError(
+                "Can't enqueue items to a process thats scheduled to stop")
+        self.__nextTick(coro, args)
 
     @corelogger.debugwrapper
     def start(self):
@@ -211,7 +217,7 @@ class EventLoop(EventEmitter):
                     raise slot[1]
             [fn(self, *args, **kwargs) for fn in fns]
             self.emit(event) if event else None
-            self._queue.push(method)
+            self.__nextTick(method, ())
         deployed_fn.__qualname__ = deployed_fn.__qualname__.replace(
             'scheduler.<locals>.deployed_fn', name)
         deployed_fn.__name__ = deployed_fn.__name__.replace(
