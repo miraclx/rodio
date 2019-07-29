@@ -3,11 +3,9 @@ from rodio import EventLoop, printfromprocess
 
 
 def main():
-    process = EventLoop(self_pause=False)
-    module = process.load_module(sys.argv[1])
-    module \
-        .on('complete', lambda process: (
-            process.scheduleExit() if not process.ended() else None))
+    process = EventLoop(self_pause=False, shared_queue=False)
+    module = process.load_module(sys.argv[1], block=True)
+    process.terminate()
 
 
 if __name__ == "__main__":
