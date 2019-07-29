@@ -13,7 +13,8 @@ setuptools.setup(
     long_description_content_type="text/markdown",
     license='Apache-2.0',
     url="https://github.com/miraclx/node-buffer",
-    packages=['node_events', 'uvloop'],
+    packages=['rodio', 'rodio.internals'],
+    install_requires=['node-events', 'uvloop', 'dill'],
     classifiers=[
         "Operating System :: OS Independent",
         "Programming Language :: Python :: 3",
