@@ -11,15 +11,9 @@ def init():
 
     printfromprocess("__main__.py init")
 
-    process1 = EventLoop("process1", self_pause=False)
-    process2 = EventLoop("process2", self_pause=False)
-
-    process1.load_module(tx('./module01.py'))
-    process2.load_module(tx('./module02.py'))
-
-    process1.kill()
-    process2.kill()
-
+    process = EventLoop("MainEventLoop", self_pause=False)
+    process.load_module(tx('./mainmod.py'), block=True)
+    process.terminate()
     printfromprocess("__main__.py end")
 
 
