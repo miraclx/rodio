@@ -103,9 +103,9 @@ class EventLoop(EventEmitter):
     def __nextTick(self, coro, args):
         if self.ended():
             raise RuntimeError("Can't enqueue items to the ended process")
-        if self.end_is_queued():
+        if not self._can_enqueue_items():
             raise RuntimeError(
-                "Can't enqueue items to a process thats scheduled to stop")
+                "Can't tick onto an EventLoop that has been started without a shared EventQueue")
         self.emit('nextTick', [coro, args])
         self._queue.push(coro, args)
         if self.__autostart and not self.started():
@@ -269,6 +269,9 @@ class EventLoop(EventEmitter):
             raise TypeError("loop argument must be a valid EventLoop object")
         if self.ended():
             raise RuntimeError("Can't load a file under an ended eventloop")
+        if not self._can_enqueue_items():
+            raise RuntimeError(
+                "Can't load module onto an eventloop that has been started without a shared EventQueue")
         if isinstance(getattr(self, '_module_stack', None), LoopModuleStruct):
             raise RuntimeError(
                 "This loop has already been attached a module, this can only be done once")
@@ -282,6 +285,18 @@ class EventLoop(EventEmitter):
         return struct.wait(block=block, event_queue=[
             ['complete', self, self._queue._ended_or_paused]
         ])
+
+    def _can_enqueue_items(self):
+        """
+        Here's how this works
+          1. If the process has ended, return False.
+          2. If not, check if the queue is shared.
+          3. If it's not, return False.
+          4. Return True if the EventLoop is yet to start.
+          5. Otherwise, return True if the active process is the EventLoop.
+        """
+        return not self.ended() and self._queue.is_shared() or \
+            not self.started() or get_current_loop() is self
 
     def set_name(self, name):
         if not (name and isinstance(name, str)):
