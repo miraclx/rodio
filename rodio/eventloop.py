@@ -326,11 +326,11 @@ class EventLoop(EventEmitter):
 # Functions to get current event loop
 
 
-def get_current_loop(*args):
+def get_current_loop(*args, msg=None):
     loop: EventLoop = getattr(get_current_process(),
                               '_eventloop', *args or (None,))
     if not (args or loop):
-        raise RuntimeError('no running event loop')
+        raise RuntimeError(msg or 'no running event loop')
     else:
         return loop
 
