@@ -27,6 +27,8 @@ async def awaitingasyncfunction2():
     await asyncio.sleep(2)
     printfromprocess('awaitingasyncfunction2 done waiting for 2 seconds')
 
+
+process.nextTick(lambda: printfromprocess("module01.py init"))
 process.nextTick(normalfunction)
 process.nextTick(normalasyncfunction1)
 process.nextTick(normalasyncfunction2)
@@ -35,3 +37,4 @@ process.nextTick([
     awaitingasyncfunction2
 ])
 process.nextTick(normalfunction)
+process.nextTick(lambda: printfromprocess("module01.py exit"))

@@ -8,9 +8,7 @@ def init():
     from rodio import EventLoop, printfromprocess
 
     tx = getTransformer(__file__)
-
     printfromprocess("__main__.py init")
-
     process = EventLoop("MainEventLoop", self_pause=False)
     process.load_module(tx('./mainmod.py'), block=True)
     process.terminate()
