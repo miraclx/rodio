@@ -23,4 +23,4 @@ for i in range(10):
     threads.append(thread)
 
 [thread.join() for thread in threads]
-process.scheduleStop()
+process.scheduleExit()

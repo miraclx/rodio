@@ -10,7 +10,7 @@ def decoy():
     time.sleep(2)
     printfromprocess("quiting after 3 secs...")
     time.sleep(3)
-    loop.scheduleStop()
+    loop.scheduleExit()
 
 
 printfromprocess("main init")

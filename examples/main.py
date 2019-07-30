@@ -38,4 +38,4 @@ process.nextTick([
 ])
 process.nextTick(normalfunction)
 
-process.scheduleStop()
+process.scheduleExit()

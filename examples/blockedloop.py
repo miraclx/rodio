@@ -22,7 +22,7 @@ def queueAsyncFns():
 
 def actingfunction():
     print("helloworld")
-    process.nextTick([queueAsyncFns, lambda: process.scheduleStop()])
+    process.nextTick([queueAsyncFns, lambda: process.scheduleExit()])
 
 
 print("before start")
