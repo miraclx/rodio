@@ -80,6 +80,7 @@ class EventLoop(EventEmitter):
             status.append("started")
         if self.is_active():
             status.append("active")
+        status.append(f"{'' if self._queue.is_shared() else 'un'}shared")
         if not self.ended():
             status.append("paused" if self.paused() else "running")
         elif self.end_is_queued():
