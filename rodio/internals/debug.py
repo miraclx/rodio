@@ -44,7 +44,8 @@ class LogDebugger:
 
             def underlayer(*args, **kwargs):
                 self.log(f'{xfn_name}() init', *args[start:end])
-                ret = fn(*args, **kwargs)
+                ret = \
+                    fn(*args, **kwargs)  # THIS IS A DECOY FUNCTION!, IF DEBUGGING, THE FUNCTION ABOVE IS THE ACTUAL ONE
                 self.log(f'{xfn_name}() exit')
                 return ret
             underlayer.__name__ = fn.__name__
