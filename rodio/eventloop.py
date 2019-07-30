@@ -6,6 +6,7 @@ Efficient non-blocking event loops for async concurrency and I/O
           Think of this as AsyncIO on steroids
 """
 
+import sys
 import importlib
 import threading
 import multiprocessing
@@ -37,8 +38,10 @@ class LoopModuleStruct(EventEmitter):
 
     def init(self):
         self.loop._queue.once('end', self.is_loaded.set)
-        self.loader.load_module()
-        self.is_loaded.set()
+        try:
+            self.loader.load_module()
+        finally:
+            self.is_loaded.set()
 
     def wait(self, block=False, event_queue=[]):
         def target():
@@ -63,8 +66,9 @@ class EventLoop(EventEmitter):
         self.__block = block
         self.__autostart = autostart
         self.__self_pause = self_pause
-        self.__queued_exit = threading.Event()
         self._is_directly_nested = is_within_loop()
+        self.__queued_exit = multiprocessing.Event()
+        self.__exit_on_exception = multiprocessing.Event()
 
         self._queue = EventQueue(shared_queue=shared_queue)
         self._process = RodioProcess(target=self._run,
@@ -96,10 +100,19 @@ class EventLoop(EventEmitter):
             self._queue.start()
         except SystemExit as e:
             self._exit(1 if not e.args else e.args[0] or 0)
+        except:
+            if self.hasListeners('error'):
+                self.emit('error', sys.exc_info()[1])
+
+            import traceback
+            traceback.print_exc()
+            self.__exit_on_exception.set()
+            self._queue.end()
 
     def _onend(self):
         self.emit('beforeExit')
-        self._queue.end()
+        if not self.__exit_on_exception.is_set():
+            self._queue.end()
 
     def __nextTick(self, coro, args):
         if self.ended():
